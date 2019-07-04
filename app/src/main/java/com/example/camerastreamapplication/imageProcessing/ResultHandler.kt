@@ -11,8 +11,11 @@ object ResultHandler : TensorFlowProcessingListener
     override fun onProcessingSuccess(data: Any?)
     {
         data?.let {
-            val tensor = data as Array<Array<Array<FloatArray>>>
-            val output = tensor.flatten()
+            if(data is Array<*>)
+            {
+                val tensor = data as Array<Array<Array<FloatArray>>>
+                val output = tensor.flatten()
+            }
 
 
         }
@@ -20,8 +23,8 @@ object ResultHandler : TensorFlowProcessingListener
         Log.d(TAG, "Neural network processing finished")
     }
 
-    override fun onProcessingFailed()
+    override fun onProcessingFailed(reason: String?)
     {
-        Log.e(TAG, "Error processing image in tensor flow neural network")
+        Log.e(TAG, "Error during neural network processing : $reason")
     }
 }

@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.TextureView
 import com.example.camerastreamapplication.cameraAbstractionLayer.*
-import com.example.camerastreamapplication.imageProcessing.ImageProcessingUtils
 import com.example.camerastreamapplication.tfLiteWrapper.TfLiteUtils
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -31,17 +30,18 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Ca
         {
             override fun onCaptureCompleted(session: CameraCaptureSession, request: CaptureRequest, result: TotalCaptureResult)
             {
-                if (!ImageProcessingUtils.storeInBuffer(textureView.bitmap))
-                {
-                    Log.d(TAG, "Buffer is full")
-                }
                 if (TfLiteUtils.isReady())
                 {
-                    Log.d(TAG, "Tensor flow ready")
-                    TfLiteUtils.process()
+                    Log.d(TAG, "Tensor Flow is ready, starting processing")
+                    TfLiteUtils.process(textureView.bitmap)
                 }
-            }
+                else
+                {
+                    Log.d(TAG,"Tensor flow is not yet ready to process, skipping frame")
+                }
 
+                session.capture(request, this, cameraHandler?.backgroundHandler)
+            }
         }
     }
 

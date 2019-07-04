@@ -6,7 +6,6 @@ import com.example.camerastreamapplication.tfLiteWrapper.TfLiteUtils
 enum class Result
 {
     TENSOR_FLOW_INITIALIZED,
-
     TENSOR_FLOW_PROCESSED
 }
 
@@ -24,7 +23,7 @@ interface TensorFlowInitializationListener
 interface TensorFlowProcessingListener
 {
     fun onProcessingSuccess(data: Any?)
-    fun onProcessingFailed()
+    fun onProcessingFailed(reason : String? = null)
 }
 
 object ResultDispatcher
@@ -56,7 +55,7 @@ object ResultDispatcher
         when (status)
         {
             Status.SUCCESS -> tensorFlowProcessingListener.onProcessingSuccess(data)
-            Status.FAILURE -> tensorFlowProcessingListener.onProcessingFailed()
+            Status.FAILURE -> tensorFlowProcessingListener.onProcessingFailed(data as String?)
         }
     }
 }

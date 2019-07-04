@@ -76,7 +76,8 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
     val previewSize: Size
     private var sensorOrientation = 0
 
-    private var backgroundHandler: Handler? = null
+    var backgroundHandler: Handler? = null
+    private set
     private var handlerThread: HandlerThread? = null
 
     private lateinit var requestBuilder: CaptureRequest.Builder
@@ -144,7 +145,7 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
         Log.d(TAG, "start() called")
         try
         {
-            cameraCaptureSession?.setRepeatingRequest(requestBuilder.build(), listener, backgroundHandler)
+            cameraCaptureSession?.capture(requestBuilder.build(), listener, backgroundHandler)
         } catch (ex: CameraAccessException)
         {
             Log.e(TAG, "Error setting capture session request, reason: ${ex.reason}")
@@ -169,9 +170,8 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
 
         val shouldSwapDimensions = CameraUtils.shouldSwapDimensions(sensorOrientation, displayRotation)
 
-        requestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW).apply {
-            set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)
-        }
+
+        requestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
 
         val surfaces = configureSurfaces(targets, shouldSwapDimensions)
 

@@ -1,8 +1,9 @@
 package com.example.camerastreamapplication.tfLiteWrapper
 
 import android.app.Activity
+import android.graphics.Bitmap
 import android.util.Log
-import com.example.camerastreamapplication.imageProcessing.DoubleBuffer
+import com.example.camerastreamapplication.imageProcessing.ImageProcessingUtils
 import com.example.camerastreamapplication.imageProcessing.ResultHandler
 import com.example.camerastreamapplication.threading.*
 import org.tensorflow.lite.Interpreter
@@ -24,10 +25,12 @@ object TfLiteUtils : TensorFlowInitializationListener
         private set
     var initialized: Boolean = false
 
+    private var ready = false
+
     // Output tensor from yolo network
     private val output: Array<Array<Array<FloatArray>>> = Array(1) { Array(13) { Array(13) { FloatArray(425) } } }
 
-    val doubleBuffer: DoubleBuffer
+    private val buffer: ByteBuffer
 
     init
     {
@@ -37,7 +40,7 @@ object TfLiteUtils : TensorFlowInitializationListener
                 BATCH_SIZE *
                 PIXEL_SIZE
 
-        doubleBuffer = DoubleBuffer(imageSize)
+        buffer = ByteBuffer.allocateDirect(imageSize)
     }
 
     private fun loadModelFile(activity: Activity, filename: String): ByteBuffer
@@ -67,20 +70,21 @@ object TfLiteUtils : TensorFlowInitializationListener
         ThreadExecutor.execute(runnable)
     }
 
-    fun process()
+    fun process(bitmap: Bitmap)
     {
-        val processingRunnable = Runnable {
-            val buffer = doubleBuffer.getBufferForReading()
-            if (buffer == null)
-            {
-                Log.d(TAG, "No free buffer available")
-                ResultHandler.onProcessingFailed()
-            }
+        if (!ready)
+        {
+            ResultHandler.onProcessingFailed("Last processing request hasn't finished yet")
+            return
+        }
 
-            buffer?.use {
-                interpreter?.run(buffer.buffer, output)
-                ResultHandler.onProcessingSuccess(output)
-            }
+        ready = false
+        val processingRunnable = Runnable {
+
+            ImageProcessingUtils.storeInBuffer(bitmap, buffer)
+            interpreter?.run(buffer, output)
+            ResultHandler.onProcessingSuccess(output)
+            this.ready = true
         }
 
         ThreadExecutor.execute(processingRunnable)
@@ -88,17 +92,19 @@ object TfLiteUtils : TensorFlowInitializationListener
 
     override fun onInitializationSuccess()
     {
+        ready = true
         Log.d(TAG, "Initialized tensorflow lite interpreter")
         initialized = true
     }
 
     override fun onInitializationFailed()
     {
+        ready = true
         Log.e(TAG, "Error initializing tensorflow lite interpreter")
     }
 
     fun isReady(): Boolean
     {
-        return initialized && interpreter != null
+        return initialized && interpreter != null && ready
     }
 }
