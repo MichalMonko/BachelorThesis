@@ -10,16 +10,16 @@ import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.TextureView
-import com.example.camerastreamapplication.CameraAbstractionLayer.CameraAbstractionLayer
-import com.example.camerastreamapplication.CameraAbstractionLayer.CameraSessionBuilder
-import com.example.camerastreamapplication.CameraAbstractionLayer.CameraUtils
-import com.example.camerastreamapplication.CameraAbstractionLayer.SurfaceTextureWithSize
+import com.example.camerastreamapplication.cameraAbstractionLayer.*
+import com.example.camerastreamapplication.imageProcessing.ImageProcessingUtils
+import com.example.camerastreamapplication.tfLiteWrapper.TfLiteUtils
 import kotlinx.android.synthetic.main.activity_main.*
 
 private const val CAMERA_PERMISSION_CODE = 101
 private const val TAG = "MAIN_ACTIVITY"
+private const val MODEL_FILE = "yolov3-tiny.tflite"
 
-class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener
+class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, CameraReadyListener
 {
 
     private var cameraHandler: CameraAbstractionLayer? = null
@@ -31,8 +31,10 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener
         {
             override fun onCaptureCompleted(session: CameraCaptureSession, request: CaptureRequest, result: TotalCaptureResult)
             {
-                Log.d(TAG, "onCaptureCompleted()")
-                super.onCaptureCompleted(session, request, result)
+                if (!ImageProcessingUtils.storeInBuffer(textureView.bitmap))
+                {
+                    Log.d(TAG,"Buffer is full")
+                }
             }
 
         }
@@ -43,7 +45,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener
         Log.d(TAG, "onCreate(): begin")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        TfLiteUtils.initializeTensorFlow(this, MODEL_FILE)
         ActivityCompat.requestPermissions(this, arrayOf(CAMERA), CAMERA_PERMISSION_CODE)
     }
 
@@ -56,7 +58,6 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener
             Log.d(TAG, "onResume() Texture View is valid")
             prepareCamera()
             applyRotation()
-            startCameraSession()
         }
         else
         {
@@ -77,7 +78,6 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener
         {
             prepareCamera()
             applyRotation()
-            startCameraSession()
         }
     }
 
@@ -85,23 +85,16 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener
     {
         cameraHandler = CameraSessionBuilder()
                 .withActivity(this)
-                .withListener(this.captureListener)
+                .withCallbackListener(this.captureListener)
+                .withReadyListener(this)
                 .addTarget(SurfaceTextureWithSize(
                         textureView.surfaceTexture, textureView.width, textureView.height))
                 .build()
     }
 
-    private fun startCameraSession(): Boolean
+    override fun onCameraReady()
     {
-        cameraHandler?.let {
-            if (it.isReady)
-            {
-                it.start()
-                return true
-            }
-            return false
-        }
-        throw NullPointerException("cameraHandler is not initialized")
+        cameraHandler?.start()
     }
 
     private fun applyRotation()
