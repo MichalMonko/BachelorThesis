@@ -38,8 +38,14 @@ class DoubleBuffer(imageSize: Int)
     {
         return when
         {
-            frontBuffer.state == STATE.FULL -> frontBuffer
-            backBuffer.state == STATE.FULL  -> backBuffer
+            frontBuffer.state == STATE.FULL -> {
+                frontBuffer.state = STATE.OPENED_FOR_READING
+                frontBuffer
+            }
+            backBuffer.state == STATE.FULL  -> {
+                backBuffer.state = STATE.OPENED_FOR_READING
+                backBuffer
+            }
             else                            -> null
         }
     }
@@ -49,17 +55,28 @@ class DoubleBuffer(imageSize: Int)
 
         if (frontBuffer.state == STATE.EMPTY)
         {
+            frontBuffer.state = STATE.OPENED_FOR_WRITING
             return frontBuffer
         }
         return when (backBuffer.state)
         {
-            STATE.EMPTY -> backBuffer
+            STATE.EMPTY ->
+            {
+                backBuffer.state = STATE.OPENED_FOR_WRITING
+                backBuffer
+            }
             STATE.FULL  ->
             {
                 if (frontBuffer.state == STATE.EMPTY)
+                {
+                    frontBuffer.state = STATE.OPENED_FOR_WRITING
                     frontBuffer
+                }
                 else
+                {
+                    backBuffer.state = STATE.OPENED_FOR_WRITING
                     backBuffer
+                }
             }
             else        -> null
         }

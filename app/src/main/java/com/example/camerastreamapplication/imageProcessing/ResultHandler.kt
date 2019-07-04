@@ -10,6 +10,13 @@ object ResultHandler : TensorFlowProcessingListener
 {
     override fun onProcessingSuccess(data: Any?)
     {
+        data?.let {
+            val tensor = data as Array<Array<Array<FloatArray>>>
+            val output = tensor.flatten()
+
+
+        }
+
         Log.d(TAG, "Neural network processing finished")
     }
 

@@ -1,14 +1,14 @@
 package com.example.camerastreamapplication.tfLiteWrapper
 
 import android.app.Activity
-import android.graphics.Bitmap
 import android.util.Log
 import com.example.camerastreamapplication.imageProcessing.DoubleBuffer
 import com.example.camerastreamapplication.imageProcessing.ResultHandler
 import com.example.camerastreamapplication.threading.*
 import org.tensorflow.lite.Interpreter
-import java.io.FileInputStream
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
+
 
 private const val TAG = "TF_UTILS"
 
@@ -24,7 +24,8 @@ object TfLiteUtils : TensorFlowInitializationListener
         private set
     var initialized: Boolean = false
 
-    private val output: Array<Array<Array<FloatArray>>> = Array(1) { Array(13) { Array(13) { FloatArray(285) } } }
+    // Output tensor from yolo network
+    private val output: Array<Array<Array<FloatArray>>> = Array(1) { Array(13) { Array(13) { FloatArray(425) } } }
 
     val doubleBuffer: DoubleBuffer
 
@@ -41,12 +42,12 @@ object TfLiteUtils : TensorFlowInitializationListener
 
     private fun loadModelFile(activity: Activity, filename: String): ByteBuffer
     {
-        val assetFileDescriptor = activity.assets.openFd(filename)
-        val inputStream = FileInputStream(assetFileDescriptor.fileDescriptor)
-
-        val byteArray = ByteArray(inputStream.available())
-
-        return ByteBuffer.wrap(byteArray)
+        val inputStream = activity.assets.open(filename)
+        val byteBuffer = ByteBuffer.allocateDirect(inputStream.available())
+        byteBuffer.order(ByteOrder.nativeOrder())
+        byteBuffer.put(inputStream.readBytes())
+        inputStream.close()
+        return byteBuffer
     }
 
     fun initializeTensorFlow(activity: Activity, filename: String)
@@ -66,7 +67,7 @@ object TfLiteUtils : TensorFlowInitializationListener
         ThreadExecutor.execute(runnable)
     }
 
-    fun process(bitmap: Bitmap)
+    fun process()
     {
         val processingRunnable = Runnable {
             val buffer = doubleBuffer.getBufferForReading()
@@ -81,6 +82,8 @@ object TfLiteUtils : TensorFlowInitializationListener
                 ResultHandler.onProcessingSuccess(output)
             }
         }
+
+        ThreadExecutor.execute(processingRunnable)
     }
 
     override fun onInitializationSuccess()

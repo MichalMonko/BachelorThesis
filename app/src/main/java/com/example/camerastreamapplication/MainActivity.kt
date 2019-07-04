@@ -33,7 +33,12 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Ca
             {
                 if (!ImageProcessingUtils.storeInBuffer(textureView.bitmap))
                 {
-                    Log.d(TAG,"Buffer is full")
+                    Log.d(TAG, "Buffer is full")
+                }
+                if (TfLiteUtils.isReady())
+                {
+                    Log.d(TAG, "Tensor flow ready")
+                    TfLiteUtils.process()
                 }
             }
 

@@ -44,7 +44,7 @@ object CameraUtils
 
         val textureRectF = RectF(0.0f, 0.0f, width, height)
 
-        //YES it should be height and than width
+        //YES it should be height and then width
         val previewRectF = RectF(0.0f, 0.0f, previewHeight, previewWidth)
 
         val centerX = textureRectF.centerX()

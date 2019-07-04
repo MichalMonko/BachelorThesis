@@ -2,6 +2,7 @@
   <dictionary name="warchlak">
     <words>
       <w>tensorflow</w>
+      <w>yolo</w>
     </words>
   </dictionary>
 </component>
