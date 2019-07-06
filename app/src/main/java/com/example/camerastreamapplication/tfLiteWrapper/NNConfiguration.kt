@@ -1,9 +1,14 @@
 package com.example.camerastreamapplication.tfLiteWrapper
 
-private const val GRID_WIDTH = 13
-private const val GRID_HEIGHT = 13
-private const val BOXES_PER_SEGMENT = 5
-private const val NUM_OF_CLASSES = 80
+const val GRID_WIDTH = 13
+const val GRID_HEIGHT = 13
+const val BOXES_PER_SEGMENT = 5
+const val NUM_OF_CLASSES = 80
 
-private const val OFFSET_PER_BOX =(BOXES_PER_SEGMENT * (NUM_OF_CLASSES + 5))
+const val DETECTION_THRESHOLD = 0.4
+
+const val OFFSET_PER_SEGMENT = (BOXES_PER_SEGMENT * (NUM_OF_CLASSES + 5))
+const val OFFSET_PER_BOX = NUM_OF_CLASSES + 5
+const val CONFIDENCE_OFFSET = 4
+const val CLASS_DATA_OFFSET = 5
 

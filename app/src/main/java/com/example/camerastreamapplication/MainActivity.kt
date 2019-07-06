@@ -11,14 +11,17 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.TextureView
 import com.example.camerastreamapplication.cameraAbstractionLayer.*
+import com.example.camerastreamapplication.predictions.PredictionListener
+import com.example.camerastreamapplication.predictions.Predictor
 import com.example.camerastreamapplication.tfLiteWrapper.TfLiteUtils
 import kotlinx.android.synthetic.main.activity_main.*
 
 private const val CAMERA_PERMISSION_CODE = 101
 private const val TAG = "MAIN_ACTIVITY"
 private const val MODEL_FILE = "yolov3-tiny.tflite"
+private const val CLASSES_LABELS_FILE = "coco.labels"
 
-class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, CameraReadyListener
+class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, CameraReadyListener, PredictionListener
 {
 
     private var cameraHandler: CameraAbstractionLayer? = null
@@ -33,14 +36,9 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Ca
                 if (TfLiteUtils.isReady())
                 {
                     Log.d(TAG, "Tensor Flow is ready, starting processing")
-                    TfLiteUtils.process(textureView.bitmap)
+                    val bitmap = textureView.bitmap
+                    TfLiteUtils.process(bitmap)
                 }
-                else
-                {
-                    Log.d(TAG,"Tensor flow is not yet ready to process, skipping frame")
-                }
-
-                session.capture(request, this, cameraHandler?.backgroundHandler)
             }
         }
     }
@@ -50,7 +48,8 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Ca
         Log.d(TAG, "onCreate(): begin")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        TfLiteUtils.initializeTensorFlow(this, MODEL_FILE)
+        val predictor = Predictor(this.applicationContext, CLASSES_LABELS_FILE, this)
+        TfLiteUtils.initializeTensorFlow(this, MODEL_FILE, predictor)
         ActivityCompat.requestPermissions(this, arrayOf(CAMERA), CAMERA_PERMISSION_CODE)
     }
 
@@ -124,5 +123,11 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Ca
     {
         Log.d(TAG, "onSurfaceTextureDestroyed() begin")
         return true
+    }
+
+    override fun onPredictionsMade(classes: List<Pair<String, Float>>)
+    {
+        val result = classes.fold("", { acc, pair -> acc + "${pair.first}: ${pair.second} \n" })
+        Log.d(TAG, "onPredictionsMade() called")
     }
 }

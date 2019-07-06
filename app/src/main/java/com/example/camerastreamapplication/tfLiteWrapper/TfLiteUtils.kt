@@ -4,7 +4,7 @@ import android.app.Activity
 import android.graphics.Bitmap
 import android.util.Log
 import com.example.camerastreamapplication.imageProcessing.ImageProcessingUtils
-import com.example.camerastreamapplication.imageProcessing.ResultHandler
+import com.example.camerastreamapplication.predictions.Predictor
 import com.example.camerastreamapplication.threading.*
 import org.tensorflow.lite.Interpreter
 import java.nio.ByteBuffer
@@ -32,6 +32,9 @@ object TfLiteUtils : TensorFlowInitializationListener
 
     private val buffer: ByteBuffer
 
+
+    private var predictor : Predictor? = null
+
     init
     {
         val imageSize = BYTES_PER_CHANNEL *
@@ -41,6 +44,7 @@ object TfLiteUtils : TensorFlowInitializationListener
                 PIXEL_SIZE
 
         buffer = ByteBuffer.allocateDirect(imageSize)
+        buffer.order(ByteOrder.nativeOrder())
     }
 
     private fun loadModelFile(activity: Activity, filename: String): ByteBuffer
@@ -53,11 +57,12 @@ object TfLiteUtils : TensorFlowInitializationListener
         return byteBuffer
     }
 
-    fun initializeTensorFlow(activity: Activity, filename: String)
+    fun initializeTensorFlow(activity: Activity, filename: String, predictor : Predictor)
     {
         val runnable = Runnable {
             try
             {
+                this.predictor = predictor
                 interpreter = Interpreter(loadModelFile(activity, filename))
                 ResultDispatcher.handleResult(Result.TENSOR_FLOW_INITIALIZED, Status.SUCCESS)
             } catch (ex: Exception)
@@ -70,30 +75,38 @@ object TfLiteUtils : TensorFlowInitializationListener
         ThreadExecutor.execute(runnable)
     }
 
-    fun process(bitmap: Bitmap)
+    fun process(bitmap: Bitmap) : Boolean
     {
+        Log.d(TAG,"processing started")
         if (!ready)
         {
-            ResultHandler.onProcessingFailed("Last processing request hasn't finished yet")
-            return
+            return false
         }
 
         ready = false
         val processingRunnable = Runnable {
 
             ImageProcessingUtils.storeInBuffer(bitmap, buffer)
+
+            Log.d(TAG,"Running interpreter")
             interpreter?.run(buffer, output)
-            ResultHandler.onProcessingSuccess(output)
-            this.ready = true
+            Log.d(TAG,"Interpreter run finished")
+
+            predictor?.makePredictions(output)
+            ready = true
         }
 
         ThreadExecutor.execute(processingRunnable)
+
+        Log.d(TAG,"processing request send to thread")
+        return true
     }
 
     override fun onInitializationSuccess()
     {
-        ready = true
         Log.d(TAG, "Initialized tensorflow lite interpreter")
+
+        ready = true
         initialized = true
     }
 
