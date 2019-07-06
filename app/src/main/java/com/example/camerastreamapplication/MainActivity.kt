@@ -127,7 +127,8 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Ca
 
     override fun onPredictionsMade(classes: List<Pair<String, Float>>)
     {
-        val result = classes.fold("", { acc, pair -> acc + "${pair.first}: ${pair.second} \n" })
         Log.d(TAG, "onPredictionsMade() called")
+        val result = classes.fold("", { acc, pair -> acc + "${pair.first}: ${pair.second} \n" })
+        detectionResultTextView.text = result
     }
 }

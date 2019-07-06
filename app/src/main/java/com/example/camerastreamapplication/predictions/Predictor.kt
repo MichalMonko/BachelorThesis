@@ -1,6 +1,7 @@
 package com.example.camerastreamapplication.predictions
 
 import android.content.Context
+import android.os.Handler
 import android.util.Log
 import com.example.camerastreamapplication.tfLiteWrapper.*
 import com.example.camerastreamapplication.utils.Tensor4D
@@ -28,6 +29,7 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
 {
     private val classMapping = mutableMapOf<Int, String>()
     private val classesScores = FloatArray(NUM_OF_CLASSES)
+    private val uiThreadHandler: Handler = Handler(context.mainLooper)
 
     init
     {
@@ -101,7 +103,7 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
 
         Log.d(TAG, "Neural network processing finished")
 
-        notifyListener(predictions)
+        uiThreadHandler.post { notifyListener(predictions) }
     }
 
 }
