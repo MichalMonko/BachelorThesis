@@ -77,7 +77,7 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
     private var sensorOrientation = 0
 
     var backgroundHandler: Handler? = null
-    private set
+        private set
     private var handlerThread: HandlerThread? = null
 
     private lateinit var requestBuilder: CaptureRequest.Builder
@@ -171,7 +171,7 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
         val shouldSwapDimensions = CameraUtils.shouldSwapDimensions(sensorOrientation, displayRotation)
 
 
-        requestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
+        requestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
 
         val surfaces = configureSurfaces(targets, shouldSwapDimensions)
 

@@ -7,12 +7,21 @@
     android:weightSum="10"
     tools:context=".MainActivity">
 
-    <TextureView
-        android:id="@+id/textureView"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="8dp"
-        android:layout_weight="5" />
+        android:layout_weight="5">
+
+        <TextureView
+            android:id="@+id/textureView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <SurfaceView
+            android:id="@+id/surfaceOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/detectionResultTextView"

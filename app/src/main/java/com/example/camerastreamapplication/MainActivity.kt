@@ -1,7 +1,7 @@
 package com.example.camerastreamapplication
 
 import android.Manifest.permission.CAMERA
-import android.graphics.SurfaceTexture
+import android.graphics.*
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.SurfaceHolder
 import android.view.TextureView
 import com.example.camerastreamapplication.cameraAbstractionLayer.*
 import com.example.camerastreamapplication.predictions.PredictionListener
@@ -21,23 +22,45 @@ private const val TAG = "MAIN_ACTIVITY"
 private const val MODEL_FILE = "yolov3-tiny.tflite"
 private const val CLASSES_LABELS_FILE = "coco.labels"
 
-class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, CameraReadyListener, PredictionListener
+class MainActivity :
+        AppCompatActivity(),
+        TextureView.SurfaceTextureListener,
+        CameraReadyListener,
+        PredictionListener
 {
 
     private var cameraHandler: CameraAbstractionLayer? = null
     private val captureListener: CameraCaptureSession.CaptureCallback
+    private val paint: Paint = Paint()
+    private lateinit var canvas: Canvas
+    private lateinit var surfaceHolder: SurfaceHolder
 
     init
     {
+        paint.color = Color.rgb(255, 0, 0)
+        paint.strokeWidth = 10.0f
+        paint.style = Paint.Style.STROKE
+
         captureListener = object : CameraCaptureSession.CaptureCallback()
         {
             override fun onCaptureCompleted(session: CameraCaptureSession, request: CaptureRequest, result: TotalCaptureResult)
             {
+                val canvas = surfaceHolder.lockCanvas()
+                canvas.drawColor(0,PorterDuff.Mode.CLEAR)
+                val bitmap = textureView.bitmap
+                canvas.drawRect(Rect(
+                        bitmap.width / 4,
+                        bitmap.height / 4,
+                        3 * bitmap.width / 4,
+                        3 * bitmap.height / 4),
+                        paint
+                )
+                surfaceHolder.unlockCanvasAndPost(canvas)
+
                 if (TfLiteUtils.isReady())
                 {
+//                    TfLiteUtils.process(bitmap)
                     Log.d(TAG, "Tensor Flow is ready, starting processing")
-                    val bitmap = textureView.bitmap
-                    TfLiteUtils.process(bitmap)
                 }
             }
         }
@@ -51,6 +74,10 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Ca
         val predictor = Predictor(this.applicationContext, CLASSES_LABELS_FILE, this)
         TfLiteUtils.initializeTensorFlow(this, MODEL_FILE, predictor)
         ActivityCompat.requestPermissions(this, arrayOf(CAMERA), CAMERA_PERMISSION_CODE)
+
+        surfaceHolder = surfaceOverlay.holder
+        surfaceOverlay.setZOrderOnTop(true)
+        surfaceHolder.setFormat(PixelFormat.TRANSLUCENT)
     }
 
     override fun onResume()
@@ -118,6 +145,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Ca
     override fun onSurfaceTextureUpdated(p0: SurfaceTexture?)
     {
     }
+
 
     override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean
     {
