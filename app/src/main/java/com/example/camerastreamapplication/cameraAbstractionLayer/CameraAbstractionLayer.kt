@@ -130,7 +130,7 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
             {
                 cameraCaptureSession = captureSession
                 isReady = true
-                captureSession.setRepeatingRequest(requestBuilder.build(), listener, backgroundHandler)
+                captureSession.capture(requestBuilder.build(), listener, backgroundHandler)
                 readyListener.onCameraReady()
             } catch (ex: CameraAccessException)
             {
@@ -171,7 +171,7 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
         val shouldSwapDimensions = CameraUtils.shouldSwapDimensions(sensorOrientation, displayRotation)
 
 
-        requestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+        requestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
 
         val surfaces = configureSurfaces(targets, shouldSwapDimensions)
 

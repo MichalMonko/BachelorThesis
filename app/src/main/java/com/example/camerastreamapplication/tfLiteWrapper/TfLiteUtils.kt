@@ -25,7 +25,7 @@ object TfLiteUtils : TensorFlowInitializationListener
         private set
     var initialized: Boolean = false
 
-    private var ready = false
+    var ready = false
 
     // Output tensor from yolo network
     private val output: Array<Array<Array<FloatArray>>> = Array(1) { Array(13) { Array(13) { FloatArray(425) } } }
@@ -93,7 +93,6 @@ object TfLiteUtils : TensorFlowInitializationListener
             Log.d(TAG,"Interpreter run finished")
 
             predictor?.makePredictions(output)
-            ready = true
         }
 
         ThreadExecutor.execute(processingRunnable)

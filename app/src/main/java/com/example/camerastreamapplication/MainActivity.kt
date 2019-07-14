@@ -12,15 +12,26 @@ import android.util.Log
 import android.view.SurfaceHolder
 import android.view.TextureView
 import com.example.camerastreamapplication.cameraAbstractionLayer.*
+import com.example.camerastreamapplication.predictions.Box
 import com.example.camerastreamapplication.predictions.PredictionListener
 import com.example.camerastreamapplication.predictions.Predictor
 import com.example.camerastreamapplication.tfLiteWrapper.TfLiteUtils
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlin.random.Random
 
 private const val CAMERA_PERMISSION_CODE = 101
 private const val TAG = "MAIN_ACTIVITY"
-private const val MODEL_FILE = "yolov3-tiny.tflite"
+private const val MODEL_FILE = "yolov2tiny.tflite"
 private const val CLASSES_LABELS_FILE = "coco.labels"
+
+fun randomColor(): Int
+{
+    return Color.rgb(
+            Random.nextInt(0, 255),
+            Random.nextInt(0, 255),
+            Random.nextInt(0, 255)
+    )
+}
 
 class MainActivity :
         AppCompatActivity(),
@@ -34,34 +45,24 @@ class MainActivity :
     private val paint: Paint = Paint()
     private lateinit var canvas: Canvas
     private lateinit var surfaceHolder: SurfaceHolder
+    private lateinit var predictor: Predictor
 
     init
     {
-        paint.color = Color.rgb(255, 0, 0)
-        paint.strokeWidth = 10.0f
-        paint.style = Paint.Style.STROKE
-
         captureListener = object : CameraCaptureSession.CaptureCallback()
         {
             override fun onCaptureCompleted(session: CameraCaptureSession, request: CaptureRequest, result: TotalCaptureResult)
             {
-                val canvas = surfaceHolder.lockCanvas()
-                canvas.drawColor(0,PorterDuff.Mode.CLEAR)
                 val bitmap = textureView.bitmap
-                canvas.drawRect(Rect(
-                        bitmap.width / 4,
-                        bitmap.height / 4,
-                        3 * bitmap.width / 4,
-                        3 * bitmap.height / 4),
-                        paint
-                )
-                surfaceHolder.unlockCanvasAndPost(canvas)
 
                 if (TfLiteUtils.isReady())
                 {
-//                    TfLiteUtils.process(bitmap)
+                    predictor.frameWidth = bitmap.width
+                    predictor.frameHeight = bitmap.height
+                    TfLiteUtils.process(bitmap)
                     Log.d(TAG, "Tensor Flow is ready, starting processing")
                 }
+                session.capture(request,this,cameraHandler?.backgroundHandler)
             }
         }
     }
@@ -71,9 +72,11 @@ class MainActivity :
         Log.d(TAG, "onCreate(): begin")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val predictor = Predictor(this.applicationContext, CLASSES_LABELS_FILE, this)
+
+        predictor = Predictor(this.applicationContext, CLASSES_LABELS_FILE, this)
         TfLiteUtils.initializeTensorFlow(this, MODEL_FILE, predictor)
         ActivityCompat.requestPermissions(this, arrayOf(CAMERA), CAMERA_PERMISSION_CODE)
+
 
         surfaceHolder = surfaceOverlay.holder
         surfaceOverlay.setZOrderOnTop(true)
@@ -153,10 +156,35 @@ class MainActivity :
         return true
     }
 
-    override fun onPredictionsMade(classes: List<Pair<String, Float>>)
+    private fun drawPrediction(label: String, rect: Rect, canvas: Canvas)
+    {
+        paint.strokeWidth = 10.0f
+        paint.style = Paint.Style.STROKE
+        paint.color = randomColor()
+
+        canvas.drawRect(rect, paint)
+
+        paint.textSize = 20.0f
+        paint.style = Paint.Style.FILL
+        paint.strokeWidth = 1.0f
+        canvas.drawText(label, rect.left.toFloat(), (rect.top - 20).toFloat(), paint)
+
+
+    }
+
+    override fun onPredictionsMade(labeledPredictions: List<Pair<String?, Box>>)
     {
         Log.d(TAG, "onPredictionsMade() called")
-        val result = classes.fold("", { acc, pair -> acc + "${pair.first}: ${pair.second} \n" })
-        detectionResultTextView.text = result
+
+        val canvas = surfaceHolder.lockCanvas()
+        canvas.drawColor(0, PorterDuff.Mode.CLEAR)
+
+        for (prediction in labeledPredictions)
+        {
+            drawPrediction(prediction.first ?: "None", prediction.second.toRect(), canvas)
+        }
+        surfaceHolder.unlockCanvasAndPost(canvas)
+
+        TfLiteUtils.ready = true
     }
 }
