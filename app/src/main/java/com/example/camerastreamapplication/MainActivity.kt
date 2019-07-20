@@ -62,7 +62,6 @@ class MainActivity :
                     TfLiteUtils.process(bitmap)
                     Log.d(TAG, "Tensor Flow is ready, starting processing")
                 }
-                session.capture(request,this,cameraHandler?.backgroundHandler)
             }
         }
     }

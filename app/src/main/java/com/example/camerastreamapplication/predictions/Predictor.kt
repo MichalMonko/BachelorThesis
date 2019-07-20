@@ -82,9 +82,7 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
     {
         Log.d(TAG, "Started output processing")
 
-        val output = mutableListOf<Float>()
-        val tensor2d = data[0].flatten()
-        tensor2d.forEach { output.addAll(it.asIterable()) }
+        val tensor3d = data[0]
 
         val predictions = ArrayList<BoundingBoxPrediction>()
 
@@ -92,15 +90,13 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
         {
             for (x in 0 until GRID_WIDTH)
             {
+                val output = tensor3d[x][y]
                 for (box in 0 until BOXES_PER_SEGMENT)
                 {
-                    val segmentOffset = y * x * OFFSET_PER_SEGMENT + x * OFFSET_PER_SEGMENT
                     val boxOffset = box * OFFSET_PER_BOX
-                    val boxDataStart = segmentOffset + boxOffset
-                    val confidenceIndex = segmentOffset + boxOffset + CONFIDENCE_OFFSET
-                    val classDataStart = confidenceIndex + 1
+                    val classDataStart = boxOffset + 5
 
-                    val boxObjectConfidence = sigmoid(output[confidenceIndex])
+                    val boxObjectConfidence = sigmoid(output[boxOffset + 4])
 
                     if (boxObjectConfidence > BOX_DETECTION_THRESHOLD)
                     {
@@ -114,18 +110,22 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
                         val maxClassIndex = maxClass.index
                         val maxClassConfidence = maxClass.value * boxObjectConfidence
 
-                        val centerX = (x + sigmoid(output[boxDataStart])) * CELL_WIDTH / INPUT_WIDTH
-                        val centerY = (y + sigmoid(output[boxDataStart + 1])) * CELL_HEIGHT / INPUT_HEIGHT
-                        val width = exp(output[boxDataStart + 2]) * ANCHORS[2 * box] * CELL_WIDTH / INPUT_WIDTH
-                        val height = exp(output[boxDataStart + 3]) * ANCHORS[2 * box + 1] * CELL_WIDTH / INPUT_WIDTH
+                        if (maxClassConfidence > CLASS_CONFIDENCE_THRESHOLD)
+                        {
 
-                        val boundingBox = Box(
-                                centerX, centerY, width, height, frameWidth,frameHeight
-                        )
+                            val centerX = (x + sigmoid(output[boxOffset])) * CELL_WIDTH / INPUT_WIDTH
+                            val centerY = (y + sigmoid(output[boxOffset + 1])) * CELL_HEIGHT / INPUT_HEIGHT
+                            val width = exp(output[boxOffset + 2]) * ANCHORS[2 * box] * CELL_WIDTH / INPUT_WIDTH
+                            val height = exp(output[boxOffset + 3]) * ANCHORS[2 * box + 1] * CELL_WIDTH / INPUT_WIDTH
 
-                        predictions.add(
-                                BoundingBoxPrediction(maxClassIndex, maxClassConfidence, boundingBox)
-                        )
+                            val boundingBox = Box(
+                                    centerX, centerY, width, height, frameWidth, frameHeight
+                            )
+
+                            predictions.add(
+                                    BoundingBoxPrediction(maxClassIndex, maxClassConfidence, boundingBox)
+                            )
+                        }
                     }
                 }
             }
