@@ -1,13 +1,13 @@
 package com.example.camerastreamapplication
 
 import android.Manifest.permission.CAMERA
+import android.app.Activity
 import android.graphics.*
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
-import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.TextureView
@@ -34,7 +34,7 @@ fun randomColor(): Int
 }
 
 class MainActivity :
-        AppCompatActivity(),
+        Activity(),
         TextureView.SurfaceTextureListener,
         CameraReadyListener,
         PredictionListener
@@ -70,6 +70,7 @@ class MainActivity :
     {
         Log.d(TAG, "onCreate(): begin")
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
 
         predictor = Predictor(this.applicationContext, CLASSES_LABELS_FILE, this)
@@ -176,13 +177,16 @@ class MainActivity :
         Log.d(TAG, "onPredictionsMade() called")
 
         val canvas = surfaceHolder.lockCanvas()
-        canvas.drawColor(0, PorterDuff.Mode.CLEAR)
-
-        for (prediction in labeledPredictions)
+        if (canvas != null)
         {
-            drawPrediction(prediction.first ?: "None", prediction.second.toRect(), canvas)
+            canvas.drawColor(0, PorterDuff.Mode.CLEAR)
+
+            for (prediction in labeledPredictions)
+            {
+                drawPrediction(prediction.first ?: "None", prediction.second.toRect(), canvas)
+            }
+            surfaceHolder.unlockCanvasAndPost(canvas)
         }
-        surfaceHolder.unlockCanvasAndPost(canvas)
 
         TfLiteUtils.ready = true
     }

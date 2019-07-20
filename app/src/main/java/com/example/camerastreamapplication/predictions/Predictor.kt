@@ -7,6 +7,8 @@ import android.util.Log
 import com.example.camerastreamapplication.tfLiteWrapper.*
 import com.example.camerastreamapplication.utils.Tensor4D
 import kotlin.math.exp
+import kotlin.math.max
+import kotlin.math.min
 
 private const val TAG = "PREDICTOR"
 
@@ -28,14 +30,14 @@ interface PredictionListener
 
 class Box(xc: Float, yc: Float, widthF: Float, heightF: Float, frameWidth: Int, frameHeight: Int)
 {
-    private val left = (xc - (widthF / 2.0f)) * frameWidth
-    private val top = (yc - (heightF / 2.0f)) * frameHeight
-    private val right = (xc + (widthF / 2.0f)) * frameWidth
-    private val bottom = (yc + (heightF / 2.0f)) * frameHeight
+    private val left = max(((xc - (widthF / 2.0f)) * frameWidth).toInt(), 0)
+    private val top = max(((yc - (heightF / 2.0f)) * frameHeight).toInt(), 0)
+    private val right = min(((xc + (widthF / 2.0f)) * frameWidth).toInt(), frameWidth - 1)
+    private val bottom = min(((yc + (heightF / 2.0f)) * frameHeight).toInt(), frameHeight - 1)
 
     fun toRect(): Rect
     {
-        return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+        return Rect(left, top, right, bottom)
     }
 }
 
@@ -84,7 +86,7 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
 
         val tensor3d = data[0]
 
-        val predictions = ArrayList<BoundingBoxPrediction>()
+        var predictions = ArrayList<BoundingBoxPrediction>()
 
         for (y in 0 until GRID_HEIGHT)
         {
@@ -131,8 +133,89 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
             }
         }
 
+        predictions = getNonMaxSuppressed(predictions)
         Log.d(TAG, "Neural network processing finished")
         uiThreadHandler.post { notifyListener(predictions) }
     }
 
+    private fun getNonMaxSuppressed(predictions: ArrayList<BoundingBoxPrediction>): ArrayList<BoundingBoxPrediction>
+    {
+        val groupedByClass = predictions.groupBy { prediction -> prediction.classIndex }
+        val newPredictions = ArrayList<BoundingBoxPrediction>()
+
+        for (classPredictions in groupedByClass.values)
+        {
+            val suppressed = nonMaxSuppression(classPredictions)
+            newPredictions.addAll(suppressed)
+        }
+
+        return newPredictions
+    }
+
+    private fun nonMaxSuppression(predictions: List<BoundingBoxPrediction>): List<BoundingBoxPrediction>
+    {
+        if (predictions.size < 2)
+        {
+            return predictions
+        }
+        val sortedPredictions = predictions.sortedByDescending { it.confidence }
+        val topScoredPrediction = sortedPredictions[0]
+
+        val suppressed = ArrayList<BoundingBoxPrediction>()
+
+        for (i in 1 until sortedPredictions.size)
+        {
+            if (IoU(topScoredPrediction, sortedPredictions[i]) <= IoU_THRESHOLD)
+            {
+                suppressed.add(predictions[i])
+            }
+        }
+
+        return suppressed
+    }
+
+    private fun IoU(lhs: BoundingBoxPrediction, rhs: BoundingBoxPrediction): Double
+    {
+        val lhsRect = lhs.location.toRect()
+        val rhsRect = rhs.location.toRect()
+
+        val biggerLeft = max(lhsRect.left, rhsRect.left)
+        val smallerRight = min(lhsRect.right, rhsRect.right)
+
+        val biggerTop = max(lhsRect.top, rhsRect.top)
+        val smallerBottom = min(lhsRect.bottom, rhsRect.bottom)
+
+        val intersectionX = (smallerRight - biggerLeft).toDouble()
+        val intersectionY = (smallerBottom - biggerTop).toDouble()
+
+        if (intersectionX < 0 || intersectionY < 0)
+            return 0.0
+
+        val intersection = intersectionX * intersectionY
+
+        val lhsArea = ((lhsRect.right - lhsRect.left) * (lhsRect.bottom - lhsRect.top)).toDouble()
+        val rhsArea = ((rhsRect.right - rhsRect.left) * (rhsRect.bottom - rhsRect.top)).toDouble()
+
+        return intersection / (lhsArea + rhsArea - intersection)
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

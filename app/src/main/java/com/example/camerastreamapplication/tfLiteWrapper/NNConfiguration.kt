@@ -20,3 +20,5 @@ const val OFFSET_PER_BOX = NUM_OF_CLASSES + 5
 const val CONFIDENCE_OFFSET = 4
 const val CLASS_DATA_OFFSET = 5
 
+const val IoU_THRESHOLD = 0.4
+
