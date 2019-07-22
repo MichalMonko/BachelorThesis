@@ -2,42 +2,41 @@ package com.example.camerastreamapplication.predictions
 
 import android.content.Context
 import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Handler
 import android.util.Log
 import com.example.camerastreamapplication.tfLiteWrapper.*
 import com.example.camerastreamapplication.utils.Tensor4D
+import com.example.camerastreamapplication.utils.iou
+import com.example.camerastreamapplication.utils.sigmoid
+import com.example.camerastreamapplication.utils.softmax
 import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
 
 private const val TAG = "PREDICTOR"
 
-fun sigmoid(x: Float): Float
-{
-    return 1.0f / (1.0f + exp(-x))
-}
-
-fun softmax(data: FloatArray)
-{
-    val exponentialSum = data.sumByDouble { exp(it.toDouble()) }.toFloat()
-    data.map { it / exponentialSum }
-}
 
 interface PredictionListener
 {
-    fun onPredictionsMade(labeledPredictions: List<Pair<String?, Box>>)
+    fun onPredictionsMade(labeledPredictions: List<Pair<String, Box>>)
 }
 
-class Box(xc: Float, yc: Float, widthF: Float, heightF: Float, frameWidth: Int, frameHeight: Int)
+class Box(xc: Float, yc: Float, widthF: Float, heightF: Float)
 {
-    private val left = max(((xc - (widthF / 2.0f)) * frameWidth).toInt(), 0)
-    private val top = max(((yc - (heightF / 2.0f)) * frameHeight).toInt(), 0)
-    private val right = min(((xc + (widthF / 2.0f)) * frameWidth).toInt(), frameWidth - 1)
-    private val bottom = min(((yc + (heightF / 2.0f)) * frameHeight).toInt(), frameHeight - 1)
+    private val left = max(xc - (widthF / 2.0f), 0.0f)
+    private val top = max(yc - (heightF / 2.0f), 0.0f)
+    private val right = min(xc + (widthF / 2.0f), 1.0f)
+    private val bottom = min(yc + (heightF / 2.0f), 1.0f)
 
-    fun toRect(): Rect
+    val normalizedRect: RectF = RectF(left, top, right, bottom)
+
+    fun toPixelRect(bitmapWidth: Int, bitmapHeight: Int): Rect
     {
-        return Rect(left, top, right, bottom)
+        return Rect((left * bitmapWidth).toInt(),
+                (top * bitmapHeight).toInt(),
+                (right * bitmapWidth).toInt(),
+                (bottom * bitmapHeight).toInt())
     }
 }
 
@@ -48,8 +47,6 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
     private val classMapping = mutableMapOf<Int, String>()
     private val classesScores = FloatArray(NUM_OF_CLASSES)
     private val uiThreadHandler: Handler = Handler(context.mainLooper)
-    var frameWidth: Int = INPUT_WIDTH
-    var frameHeight: Int = INPUT_HEIGHT
 
     init
     {
@@ -121,7 +118,7 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
                             val height = exp(output[boxOffset + 3]) * ANCHORS[2 * box + 1] * CELL_WIDTH / INPUT_WIDTH
 
                             val boundingBox = Box(
-                                    centerX, centerY, width, height, frameWidth, frameHeight
+                                    centerX, centerY, width, height
                             )
 
                             predictions.add(
@@ -165,7 +162,7 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
 
         for (i in 1 until sortedPredictions.size)
         {
-            if (IoU(topScoredPrediction, sortedPredictions[i]) <= IoU_THRESHOLD)
+            if (iou(topScoredPrediction, sortedPredictions[i]) <= IoU_THRESHOLD)
             {
                 suppressed.add(predictions[i])
             }
@@ -174,30 +171,6 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
         return suppressed
     }
 
-    private fun IoU(lhs: BoundingBoxPrediction, rhs: BoundingBoxPrediction): Double
-    {
-        val lhsRect = lhs.location.toRect()
-        val rhsRect = rhs.location.toRect()
-
-        val biggerLeft = max(lhsRect.left, rhsRect.left)
-        val smallerRight = min(lhsRect.right, rhsRect.right)
-
-        val biggerTop = max(lhsRect.top, rhsRect.top)
-        val smallerBottom = min(lhsRect.bottom, rhsRect.bottom)
-
-        val intersectionX = (smallerRight - biggerLeft).toDouble()
-        val intersectionY = (smallerBottom - biggerTop).toDouble()
-
-        if (intersectionX < 0 || intersectionY < 0)
-            return 0.0
-
-        val intersection = intersectionX * intersectionY
-
-        val lhsArea = ((lhsRect.right - lhsRect.left) * (lhsRect.bottom - lhsRect.top)).toDouble()
-        val rhsArea = ((rhsRect.right - rhsRect.left) * (rhsRect.bottom - rhsRect.top)).toDouble()
-
-        return intersection / (lhsArea + rhsArea - intersection)
-    }
 
 }
 

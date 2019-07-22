@@ -11,6 +11,7 @@ import android.support.v4.app.ActivityCompat
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.TextureView
+import com.example.camerastreamapplication.audio.AudioNotificator
 import com.example.camerastreamapplication.cameraAbstractionLayer.*
 import com.example.camerastreamapplication.predictions.Box
 import com.example.camerastreamapplication.predictions.PredictionListener
@@ -40,12 +41,13 @@ class MainActivity :
         PredictionListener
 {
 
+    private lateinit var audioNotificator: AudioNotificator
     private var cameraHandler: CameraAbstractionLayer? = null
     private val captureListener: CameraCaptureSession.CaptureCallback
     private val paint: Paint = Paint()
-    private lateinit var canvas: Canvas
     private lateinit var surfaceHolder: SurfaceHolder
     private lateinit var predictor: Predictor
+    private lateinit var bitmap: Bitmap
 
     init
     {
@@ -53,12 +55,9 @@ class MainActivity :
         {
             override fun onCaptureCompleted(session: CameraCaptureSession, request: CaptureRequest, result: TotalCaptureResult)
             {
-                val bitmap = textureView.bitmap
-
-                if (TfLiteUtils.isReady())
+                bitmap = textureView.bitmap
+                if (TfLiteUtils.isReady() && audioNotificator.isReady())
                 {
-                    predictor.frameWidth = bitmap.width
-                    predictor.frameHeight = bitmap.height
                     TfLiteUtils.process(bitmap)
                     Log.d(TAG, "Tensor Flow is ready, starting processing")
                 }
@@ -75,7 +74,12 @@ class MainActivity :
 
         predictor = Predictor(this.applicationContext, CLASSES_LABELS_FILE, this)
         TfLiteUtils.initializeTensorFlow(this, MODEL_FILE, predictor)
+
+        audioNotificator = AudioNotificator(this)
+        audioNotificator.prepare()
+
         ActivityCompat.requestPermissions(this, arrayOf(CAMERA), CAMERA_PERMISSION_CODE)
+
 
 
         surfaceHolder = surfaceOverlay.holder
@@ -172,7 +176,7 @@ class MainActivity :
 
     }
 
-    override fun onPredictionsMade(labeledPredictions: List<Pair<String?, Box>>)
+    override fun onPredictionsMade(labeledPredictions: List<Pair<String, Box>>)
     {
         Log.d(TAG, "onPredictionsMade() called")
 
@@ -183,10 +187,14 @@ class MainActivity :
 
             for (prediction in labeledPredictions)
             {
-                drawPrediction(prediction.first ?: "None", prediction.second.toRect(), canvas)
+                drawPrediction(prediction.first,
+                        prediction.second.toPixelRect(bitmap.width, bitmap.height),
+                        canvas)
             }
             surfaceHolder.unlockCanvasAndPost(canvas)
         }
+
+        audioNotificator.notify(labeledPredictions)
 
         TfLiteUtils.ready = true
     }
