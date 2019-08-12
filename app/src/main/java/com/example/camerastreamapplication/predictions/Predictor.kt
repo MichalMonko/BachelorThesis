@@ -16,10 +16,12 @@ import kotlin.math.min
 
 private const val TAG = "PREDICTOR"
 
+data class BoundingBoxPrediction(val classIndex: Int, val confidence: Float, val location: Box)
+data class LabeledPrediction(val name: String, val confidence: Float, val location: Box)
 
 interface PredictionListener
 {
-    fun onPredictionsMade(labeledPredictions: List<Pair<String, Box>>)
+    fun onPredictionsMade(labeledPredictions: List<LabeledPrediction>)
 }
 
 class Box(xc: Float, yc: Float, widthF: Float, heightF: Float)
@@ -40,7 +42,6 @@ class Box(xc: Float, yc: Float, widthF: Float, heightF: Float)
     }
 }
 
-data class BoundingBoxPrediction(val classIndex: Int, val confidence: Float, val location: Box)
 
 class Predictor(context: Context, classesFile: String, private val predictionListener: PredictionListener)
 {
@@ -70,9 +71,14 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
     {
 
         val labeledPredictions = predictions.map { prediction ->
-            Pair("${classMapping[prediction.classIndex]} : ${prediction.confidence}",
-                    prediction.location)
-        }
+            when (val name = classMapping[prediction.classIndex])
+            {
+                null -> null
+                else -> LabeledPrediction(name = name,
+                        confidence = prediction.confidence,
+                        location = prediction.location)
+            }
+        }.filterNotNull()
 
         predictionListener.onPredictionsMade(labeledPredictions)
     }
@@ -89,7 +95,7 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
         {
             for (x in 0 until GRID_WIDTH)
             {
-                val output = tensor3d[x][y]
+                val output = tensor3d[y][x]
                 for (box in 0 until BOXES_PER_SEGMENT)
                 {
                     val boxOffset = box * OFFSET_PER_BOX

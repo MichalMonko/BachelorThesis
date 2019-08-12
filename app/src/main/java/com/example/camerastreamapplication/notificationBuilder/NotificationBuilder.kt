@@ -1,10 +1,13 @@
 package com.example.camerastreamapplication.notificationBuilder
 
 import android.graphics.RectF
-import com.example.camerastreamapplication.predictions.Box
+import android.util.Log
+import com.example.camerastreamapplication.predictions.LabeledPrediction
 import com.example.camerastreamapplication.utils.area
 import com.example.camerastreamapplication.utils.intersectingRectangle
 import com.example.camerastreamapplication.utils.iou
+
+const val TAG = "AUDIO"
 
 class NonNullMap<K, V>(private val map: Map<K, V>) : Map<K, V> by map
 {
@@ -31,13 +34,13 @@ data class Notification(val objectName: String,
 
 object NotificationBuilder
 {
-    private val areas = NonNullMap(mapOf(
+    private val AREAS = NonNullMap(mapOf(
             Pair(Location.LEFT, RectF(0.0f, 0.0f, 0.33f, 1.0f)),
             Pair(Location.FRONT, RectF(0.33f, 0.0f, 0.66f, 1.0f)),
             Pair(Location.RIGHT, RectF(0.66f, 0.0f, 1.0f, 1.0f)))
     )
 
-    private val priorities = NonNullMap(mapOf(
+    private val PRIORITIES = NonNullMap(mapOf(
             Pair(Pair(Distance.VERY_CLOSE, Location.FRONT), 6),
             Pair(Pair(Distance.CLOSE, Location.FRONT), 5),
             Pair(Pair(Distance.VERY_CLOSE, Location.RIGHT), 5),
@@ -52,7 +55,7 @@ object NotificationBuilder
             Pair(Pair(Distance.FAR, Location.RIGHT), 1)
     ))
 
-    fun buildNotifications(predictions: Collection<Pair<String, Box>>): Collection<Notification>
+    fun buildNotifications(predictions: Collection<LabeledPrediction>): Collection<Notification>
     {
         val notifications = ArrayList<Notification?>()
 
@@ -64,25 +67,29 @@ object NotificationBuilder
         return notifications.filterNotNull()
     }
 
-    private fun buildNotification(prediction: Pair<String, Box>): Notification?
+    private fun buildNotification(prediction: LabeledPrediction): Notification?
     {
         val locationIoU = mapOf(
-                Pair(Location.LEFT, iou(areas[Location.LEFT], prediction.second.normalizedRect)),
-                Pair(Location.FRONT, iou(areas[Location.FRONT], prediction.second.normalizedRect)),
-                Pair(Location.RIGHT, iou(areas[Location.RIGHT], prediction.second.normalizedRect))
+                Pair(Location.LEFT, iou(AREAS[Location.LEFT], prediction.location.normalizedRect)),
+                Pair(Location.RIGHT, iou(AREAS[Location.RIGHT], prediction.location.normalizedRect)),
+                Pair(Location.FRONT, iou(AREAS[Location.FRONT], prediction.location.normalizedRect))
         )
 
         val maxLocation = locationIoU.maxBy { it.value }
 
         if (maxLocation != null)
         {
-            val intersection = intersectingRectangle(prediction.second.normalizedRect, areas[maxLocation.key])
-            val normalizedArea = intersection.area()
+            val sector = AREAS[maxLocation.key]
+            val intersection = intersectingRectangle(prediction.location.normalizedRect, sector)
+            val intersectionNormalizeArea = intersection.area()
+            val sectorNormalizedArea = sector.area()
             val location = maxLocation.key
-            val distance = determineDistance(normalizedArea)
-            val priority = priorities[Pair(distance, maxLocation.key)]
+            val distance = determineDistance(intersectionNormalizeArea / sectorNormalizedArea)
+            Log.d(TAG, "Intersection area is $intersectionNormalizeArea, Sector Area is $sectorNormalizedArea, " +
+                    " Ratio is ${intersectionNormalizeArea / sectorNormalizedArea} ")
+            val priority = PRIORITIES[Pair(distance, maxLocation.key)]
 
-            return Notification(prediction.first, location, distance, priority)
+            return Notification(prediction.name, location, distance, priority)
         }
 
         return null
@@ -92,9 +99,9 @@ object NotificationBuilder
     {
         return when
         {
-            normalizedArea >= 0.8f                            -> Distance.VERY_CLOSE
-            (0.6f <= normalizedArea && normalizedArea < 0.8f) -> Distance.CLOSE
-            (0.4f <= normalizedArea && normalizedArea < 0.6f) -> Distance.AVERAGE
+            normalizedArea >= 0.7f                            -> Distance.VERY_CLOSE
+            (0.5f <= normalizedArea && normalizedArea < 0.7f) -> Distance.CLOSE
+            (0.2f <= normalizedArea && normalizedArea < 0.5f) -> Distance.AVERAGE
             else                                              -> Distance.FAR
         }
     }

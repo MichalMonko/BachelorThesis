@@ -13,7 +13,7 @@ import android.view.SurfaceHolder
 import android.view.TextureView
 import com.example.camerastreamapplication.audio.AudioNotificator
 import com.example.camerastreamapplication.cameraAbstractionLayer.*
-import com.example.camerastreamapplication.predictions.Box
+import com.example.camerastreamapplication.predictions.LabeledPrediction
 import com.example.camerastreamapplication.predictions.PredictionListener
 import com.example.camerastreamapplication.predictions.Predictor
 import com.example.camerastreamapplication.tfLiteWrapper.TfLiteUtils
@@ -176,7 +176,7 @@ class MainActivity :
 
     }
 
-    override fun onPredictionsMade(labeledPredictions: List<Pair<String, Box>>)
+    override fun onPredictionsMade(labeledPredictions: List<LabeledPrediction>)
     {
         Log.d(TAG, "onPredictionsMade() called")
 
@@ -187,8 +187,8 @@ class MainActivity :
 
             for (prediction in labeledPredictions)
             {
-                drawPrediction(prediction.first,
-                        prediction.second.toPixelRect(bitmap.width, bitmap.height),
+                drawPrediction("${prediction.name} : ${prediction.confidence}",
+                        prediction.location.toPixelRect(bitmap.width, bitmap.height),
                         canvas)
             }
             surfaceHolder.unlockCanvasAndPost(canvas)

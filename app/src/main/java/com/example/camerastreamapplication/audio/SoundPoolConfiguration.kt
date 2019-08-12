@@ -1,17 +1,19 @@
 package com.example.camerastreamapplication.audio
 
-import com.example.camerastreamapplication.R
 import com.example.camerastreamapplication.notificationBuilder.Distance
+import com.example.camerastreamapplication.notificationBuilder.Location
 
 val AUDIO_FILES = mapOf(
-        Pair("cup", R.raw.cup),
-//        Pair("Keyboard", "keyboard.mp3"),
-//        Pair(Location.RIGHT, "right.mp3"),
-//        Pair(Location.LEFT, "left.mp3"),
-//        Pair(Location.FRONT, "front.mp3"),
-        Pair(Distance.VERY_CLOSE, R.raw.veryclose)
-//        Pair(Distance.CLOSE, "close.mp3"),
-//        Pair(Distance.FAR, "far.mp3")
+        Pair("cup", "kubek.mp3"),
+        Pair("keyboard", "klawiatura.mp3"),
+        Pair("tv", "telewizor.mp3"),
+        Pair("unknown", "nieznany.mp3"),
+        Pair(Location.RIGHT, "prawo.mp3"),
+        Pair(Location.LEFT, "lewo.mp3"),
+        Pair(Location.FRONT, "prosto.mp3"),
+        Pair(Distance.VERY_CLOSE, "bardzo_blisko.mp3"),
+        Pair(Distance.CLOSE, "blisko.mp3"),
+        Pair(Distance.FAR, "daleko.mp3")
 )
 
 const val MAX_OBJECT_NOTIFICATIONS = 3
