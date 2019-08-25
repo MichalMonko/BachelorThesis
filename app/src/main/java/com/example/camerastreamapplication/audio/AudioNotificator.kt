@@ -71,7 +71,7 @@ class AudioNotificator(private val activity: Activity)
     {
         if (state != STATE.READY)
         {
-            throw IllegalStateException("notify can be called only from READY state")
+            return
         }
 
         state = STATE.PLAYING

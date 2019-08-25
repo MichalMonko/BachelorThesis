@@ -1,13 +1,11 @@
 package com.example.camerastreamapplication
 
-import android.Manifest.permission.CAMERA
 import android.app.Activity
 import android.graphics.*
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.TextureView
@@ -20,7 +18,6 @@ import com.example.camerastreamapplication.tfLiteWrapper.TfLiteUtils
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.random.Random
 
-private const val CAMERA_PERMISSION_CODE = 101
 private const val TAG = "MAIN_ACTIVITY"
 private const val MODEL_FILE = "yolov2tiny.tflite"
 private const val CLASSES_LABELS_FILE = "coco.labels"
@@ -55,11 +52,14 @@ class MainActivity :
         {
             override fun onCaptureCompleted(session: CameraCaptureSession, request: CaptureRequest, result: TotalCaptureResult)
             {
-                bitmap = textureView.bitmap
-                if (TfLiteUtils.isReady() && audioNotificator.isReady())
+                if (cameraHandler != null)
                 {
-                    TfLiteUtils.process(bitmap)
-                    Log.d(TAG, "Tensor Flow is ready, starting processing")
+                    bitmap = textureView.bitmap
+                    if (TfLiteUtils.isReady() && audioNotificator.isReady())
+                    {
+                        TfLiteUtils.process(bitmap)
+                        Log.d(TAG, "Tensor Flow is ready, starting processing")
+                    }
                 }
             }
         }
@@ -77,9 +77,6 @@ class MainActivity :
 
         audioNotificator = AudioNotificator(this)
         audioNotificator.prepare()
-
-        ActivityCompat.requestPermissions(this, arrayOf(CAMERA), CAMERA_PERMISSION_CODE)
-
 
 
         surfaceHolder = surfaceOverlay.holder
@@ -106,28 +103,29 @@ class MainActivity :
     override fun onPause()
     {
         cameraHandler?.teardown()
+        cameraHandler = null
         super.onPause()
     }
 
     override fun onSurfaceTextureAvailable(surfaceTexture: SurfaceTexture, width: Int, height: Int)
     {
         Log.d(TAG, "onTextureAvailable(): begin")
-        if (cameraHandler == null)
-        {
-            prepareCamera()
-            applyRotation()
-        }
+        prepareCamera()
+        applyRotation()
     }
 
     private fun prepareCamera()
     {
-        cameraHandler = CameraSessionBuilder()
-                .withActivity(this)
-                .withCallbackListener(this.captureListener)
-                .withReadyListener(this)
-                .addTarget(SurfaceTextureWithSize(
-                        textureView.surfaceTexture, textureView.width, textureView.height))
-                .build()
+        if (cameraHandler == null)
+        {
+            cameraHandler = CameraSessionBuilder()
+                    .withActivity(this)
+                    .withCallbackListener(this.captureListener)
+                    .withReadyListener(this)
+                    .addTarget(SurfaceTextureWithSize(
+                            textureView.surfaceTexture, textureView.width, textureView.height))
+                    .build()
+        }
     }
 
     override fun onCameraReady()
