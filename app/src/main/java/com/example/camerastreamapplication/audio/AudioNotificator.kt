@@ -5,7 +5,7 @@ import android.media.AudioAttributes
 import android.media.MediaMetadataRetriever
 import android.media.MediaMetadataRetriever.METADATA_KEY_DURATION
 import android.media.SoundPool
-import com.example.camerastreamapplication.MAX_OBJECT_NOTIFICATIONS
+import com.example.camerastreamapplication.config.MAX_OBJECT_NOTIFICATIONS
 import com.example.camerastreamapplication.notificationBuilder.Notification
 import com.example.camerastreamapplication.notificationBuilder.NotificationBuilder
 import com.example.camerastreamapplication.predictions.LabeledPrediction
@@ -86,7 +86,7 @@ class AudioNotificator(private val activity: Activity)
             val sliced = when
             {
                 notifications.size >= MAX_OBJECT_NOTIFICATIONS -> notifications.subList(0, MAX_OBJECT_NOTIFICATIONS)
-                else                                           -> notifications.subList(0, notifications.size)
+                else                                                                                      -> notifications.subList(0, notifications.size)
             }
 
             val soundsToPlay = buildSoundAlerts(sliced)

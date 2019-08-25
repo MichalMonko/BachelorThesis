@@ -1,4 +1,4 @@
-package com.example.camerastreamapplication
+package com.example.camerastreamapplication.config
 
 //NN configuration
 const val GRID_WIDTH = 13
@@ -19,8 +19,15 @@ var BOX_DETECTION_THRESHOLD = 0.55f
 var CLASS_CONFIDENCE_THRESHOLD = 0.6f
 
 
-var IoU_THRESHOLD = 0.4
+var IoU_THRESHOLD = 0.4f
 
 //Audio notificator configuration
 
 var MAX_OBJECT_NOTIFICATIONS = 3
+
+//Shared Preferences
+const val SHARED_PREFERENCES_NAME = "Configuration"
+const val BOX_DETECTION_KEY = "BoxDetection"
+const val CLASS_DETECTION_KEY = "ClassDetection"
+const val IOU_THRESHOLD_KEY = "IouThreshold"
+const val MAX_NOTIFICATIONS_KEY = "MaxNotifications"
