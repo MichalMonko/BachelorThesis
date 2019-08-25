@@ -4,4 +4,7 @@
     <string name="title_activity_camera_preview">CameraPreviewActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="title_activity_configuration">ConfigurationActivity</string>
+    <string name="iou_threshold_text">IoU Threshold</string>
+    <string name="nn_config_text">Neural Network Configuration</string>
 </resources>

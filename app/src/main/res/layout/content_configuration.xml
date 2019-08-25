@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".ConfigurationActivity"
+    tools:showIn="@layout/configuration_activity">
+
+    <TextView
+        android:id="@+id/notifications_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Audio Notifications: "
+        android:textSize="24sp"
+        app:layout_constraintStart_toEndOf="@+id/notifications_help"
+        app:layout_constraintTop_toTopOf="@+id/notifications_help" />
+
+    <TextView
+        android:id="@+id/notifications_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:text="0"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/notifications_slider"
+        app:layout_constraintTop_toTopOf="@+id/notifications_text" />
+
+    <ImageButton
+        android:id="@+id/notifications_help"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/question_24"
+        app:layout_constraintStart_toStartOf="@+id/notifications_slider"
+        app:layout_constraintTop_toBottomOf="@+id/notifications_slider"
+        app:srcCompat="@android:drawable/ic_menu_help" />
+
+    <SeekBar
+        android:id="@+id/notifications_slider"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:max="10"
+        android:progress="1"
+        android:thumb="@drawable/pink_circle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nn_line_separator5" />
+
+    <View
+        android:id="@+id/nn_line_separator5"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/audio_notification_text" />
+
+    <TextView
+        android:id="@+id/audio_notification_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="Audio Notification Configuration"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nn_line_separator4" />
+
+    <View
+        android:id="@+id/nn_line_separator4"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/iou_threshold_text" />
+
+    <TextView
+        android:id="@+id/iou_threshold_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="IoU Threshold: "
+        android:textSize="24sp"
+        app:layout_constraintStart_toEndOf="@+id/iou_threshold_help"
+        app:layout_constraintTop_toTopOf="@+id/iou_threshold_help" />
+
+    <View
+        android:id="@+id/nn_line_separator3"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/darker_gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/class_threshold_text" />
+
+    <ImageButton
+        android:id="@+id/iou_threshold_help"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/question_24"
+        app:layout_constraintStart_toStartOf="@+id/iou_threshold_slider"
+        app:layout_constraintTop_toBottomOf="@+id/iou_threshold_slider"
+        app:srcCompat="@android:drawable/ic_menu_help" />
+
+    <SeekBar
+        android:id="@+id/iou_threshold_slider"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:max="100"
+        android:progress="5"
+        android:thumb="@drawable/pink_circle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nn_line_separator3" />
+
+    <TextView
+        android:id="@+id/iou_threshold_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:text="0"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/iou_threshold_slider"
+        app:layout_constraintTop_toTopOf="@+id/iou_threshold_text" />
+
+    <TextView
+        android:id="@+id/class_threshold_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Class Threshold: "
+        android:textSize="24sp"
+        app:layout_constraintStart_toEndOf="@+id/class_threshold_help"
+        app:layout_constraintTop_toTopOf="@+id/class_threshold_help" />
+
+    <View
+        android:id="@+id/nn_line_separator2"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/darker_gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/box_threshold_text" />
+
+    <ImageButton
+        android:id="@+id/class_threshold_help"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/question_24"
+        app:layout_constraintStart_toStartOf="@+id/box_threshold_slider"
+        app:layout_constraintTop_toBottomOf="@+id/class_threshold_slider"
+        app:srcCompat="@android:drawable/ic_menu_help" />
+
+    <SeekBar
+        android:id="@+id/class_threshold_slider"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:max="100"
+        android:progress="5"
+        android:thumb="@drawable/pink_circle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nn_line_separator2" />
+
+    <TextView
+        android:id="@+id/class_threshold_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:text="0"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/class_threshold_slider"
+        app:layout_constraintTop_toTopOf="@+id/class_threshold_text" />
+
+    <TextView
+        android:id="@+id/nn_config_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/nn_config_text"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <SeekBar
+        android:id="@+id/box_threshold_slider"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:max="100"
+        android:progress="5"
+        android:thumb="@drawable/pink_circle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nn_line_separator" />
+
+    <TextView
+        android:id="@+id/box_threshold_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Box Threshold: "
+        android:textSize="24sp"
+        app:layout_constraintStart_toEndOf="@+id/box_threshold_help"
+        app:layout_constraintTop_toTopOf="@+id/box_threshold_help" />
+
+    <TextView
+        android:id="@+id/box_threshold_inidicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:text="0"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/box_threshold_slider"
+        app:layout_constraintTop_toTopOf="@+id/box_threshold_text" />
+
+    <ImageButton
+        android:id="@+id/box_threshold_help"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/question_24"
+        app:layout_constraintStart_toStartOf="@+id/box_threshold_slider"
+        app:layout_constraintTop_toBottomOf="@+id/box_threshold_slider"
+        app:srcCompat="@android:drawable/ic_menu_help" />
+
+    <View
+        android:id="@+id/nn_line_separator"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nn_config_text" />
+</android.support.constraint.ConstraintLayout>

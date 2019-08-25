@@ -16,4 +16,3 @@ val AUDIO_FILES = mapOf(
         Pair(Distance.FAR, "daleko.mp3")
 )
 
-const val MAX_OBJECT_NOTIFICATIONS = 3

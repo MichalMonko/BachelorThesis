@@ -5,7 +5,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.os.Handler
 import android.util.Log
-import com.example.camerastreamapplication.tfLiteWrapper.*
+import com.example.camerastreamapplication.*
 import com.example.camerastreamapplication.utils.Tensor4D
 import com.example.camerastreamapplication.utils.iou
 import com.example.camerastreamapplication.utils.sigmoid
