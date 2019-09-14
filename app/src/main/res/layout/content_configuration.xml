@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="Audio Notifications: "
+        android:text="@string/notifications_string"
         android:textSize="24sp"
         app:layout_constraintStart_toEndOf="@+id/notifications_help"
         app:layout_constraintTop_toTopOf="@+id/notifications_help" />
@@ -41,7 +41,7 @@
     <SeekBar
         android:id="@+id/notifications_slider"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
@@ -71,7 +71,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:text="Audio Notification Configuration"
+        android:text="@string/audio_notifications_config_string"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -93,7 +93,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="IoU Threshold: "
+        android:text="@string/iou_threshold_string"
         android:textSize="24sp"
         app:layout_constraintStart_toEndOf="@+id/iou_threshold_help"
         app:layout_constraintTop_toTopOf="@+id/iou_threshold_help" />
@@ -122,7 +122,7 @@
     <SeekBar
         android:id="@+id/iou_threshold_slider"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
@@ -149,7 +149,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="Class Threshold: "
+        android:text="@string/class_threshold_string"
         android:textSize="24sp"
         app:layout_constraintStart_toEndOf="@+id/class_threshold_help"
         app:layout_constraintTop_toTopOf="@+id/class_threshold_help" />
@@ -178,7 +178,7 @@
     <SeekBar
         android:id="@+id/class_threshold_slider"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
@@ -216,7 +216,7 @@
     <SeekBar
         android:id="@+id/box_threshold_slider"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
@@ -233,7 +233,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="Box Threshold: "
+        android:text="@string/box_threshold_string"
         android:textSize="24sp"
         app:layout_constraintStart_toEndOf="@+id/box_threshold_help"
         app:layout_constraintTop_toTopOf="@+id/box_threshold_help" />

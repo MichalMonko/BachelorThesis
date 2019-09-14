@@ -24,6 +24,7 @@ class MainMenuActivity : AppCompatActivity(), View.OnClickListener
 
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
         startButton.setOnClickListener(this)
+        configureButton.setOnClickListener(this)
 
         val sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
         BOX_DETECTION_THRESHOLD = sharedPreferences.getFloat(BOX_DETECTION_KEY, BOX_DETECTION_THRESHOLD)

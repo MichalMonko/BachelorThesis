@@ -5,6 +5,23 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_configuration">ConfigurationActivity</string>
-    <string name="iou_threshold_text">IoU Threshold</string>
-    <string name="nn_config_text">Neural Network Configuration</string>
+    <string name="iou_threshold_text">Próg IoU</string>
+    <string name="nn_config_text">Konfiguracja sieci neuronowej</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="box_threshold_help_title">Próg lokalizacji</string>
+    <string name="box_threshold_help_message">Określa minimalną wartość pewności sieci neuronowej że w danym fragmencie obrazu znajduje się jakokolwiek obiekt. Zwiększenie tej wartości może wpłynąć pozytywnie na lokalizację wykrytych obiektów na obrazie jednoczśnie jednak może spowodować ignorowanie niektórych obiektów (Tych dla których wartość pewności nie przekroczyła progu).</string>
+    <string name="class_threshold_help_title">Próg klasy</string>
+    <string name="class_threshold_help_message"><![CDATA[Określa minimalną wartość prawdopodobieństwa że wykryty w danej lokalizacji obiekt należy do danej klasy. Zwiększenie tej wartości pozwala na zmiejszenie ilości błędów podczas przyznawania przynależności może jednak zmniejszyć ilość wykrywanych obiektów.]]></string>
+    <string name="iou_threshold_help_title">Próg IoU</string>
+    <string name="iou_threshold_help_message">IoU jest algorytmem zapobiegającym wielokrotnej detekcji tego samego obiektu poprzez wybranie najbardziej prawdopodobnej lokalizacji spośród kilku nakladających się na siebie detekcji. Zwiększenie progu pozwala na wykrywanie obiektów znajdujących się blisko siebie zwiększa jednak ryzyko wielokrotnej detekcji tego samego obiektu.</string>
+    <string name="notifications_help_title">Ilość notyfikacji</string>
+    <string name="notifications_help_message"><![CDATA[Określa ilość powiadomień głosowych dla każdej detekcji. Zwiększenie tej wartość może spowodować wydłużenie czasu pomiędzy detekcjami oraz długi czas odtwarzania powiadomienia głosowego na obszrach w których znajduje się wiele obiektów. Notyfikacje są odtwarzane dla obiektów o najwyższym priorytecie a więc w pierwszej kolejności dla znajdujących się blisko oraz bezpośrednio przed kamerą.]]></string>
+    <string name="box_threshold_string">Próg lokalizacji</string>
+    <string name="class_threshold_string">Próg klasy</string>
+    <string name="iou_threshold_string">Próg IoU</string>
+    <string name="notifications_string">Notyfikacje Audio</string>
+    <string name="audio_notifications_config_string">Konfiguracja notyfikacji audio</string>
+    <string name="return_text">Powrót</string>
 </resources>
