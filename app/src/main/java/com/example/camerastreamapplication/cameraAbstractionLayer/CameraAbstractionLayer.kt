@@ -22,16 +22,17 @@ data class SurfaceTextureWithSize(val surfaceTexture: SurfaceTexture,
                                   val width: Int,
                                   val height: Int)
 
-interface CameraReadyListener
+interface CameraStateListener
 {
     fun onCameraReady()
+    fun onCameraFailure()
 }
 
 class CameraSessionBuilder
 {
     private lateinit var callbackListener: CameraCaptureSession.CaptureCallback
     private lateinit var activity: Activity
-    private lateinit var readyListener: CameraReadyListener
+    private lateinit var stateListener: CameraStateListener
     private val targets = arrayListOf<SurfaceTextureWithSize>()
 
 
@@ -47,9 +48,9 @@ class CameraSessionBuilder
         return this
     }
 
-    fun withReadyListener(readyListener: CameraReadyListener): CameraSessionBuilder
+    fun withReadyListener(stateListener: CameraStateListener): CameraSessionBuilder
     {
-        this.readyListener = readyListener
+        this.stateListener = stateListener
         return this
     }
 
@@ -61,12 +62,12 @@ class CameraSessionBuilder
 
     fun build(): CameraAbstractionLayer
     {
-        return CameraAbstractionLayer(activity, callbackListener, readyListener, this.targets)
+        return CameraAbstractionLayer(activity, callbackListener, stateListener, this.targets)
     }
 }
 
 class CameraAbstractionLayer(private val activity: Activity, private val listener: CameraCaptureSession.CaptureCallback,
-                             private val readyListener: CameraReadyListener,
+                             private val stateListener: CameraStateListener,
                              private val targets: List<SurfaceTextureWithSize>) : CameraDevice.StateCallback()
 {
 
@@ -131,7 +132,7 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
                 cameraCaptureSession = captureSession
                 isReady = true
                 captureSession.setRepeatingRequest(requestBuilder.build(), listener, backgroundHandler)
-                readyListener.onCameraReady()
+                stateListener.onCameraReady()
             } catch (ex: CameraAccessException)
             {
                 Log.e(TAG, "Error setting capture session request, reason: ${ex.reason}")
@@ -245,6 +246,7 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
         camera?.close()
         camera = null
         stopBackgroundThread()
+        stateListener.onCameraFailure()
     }
 
 }

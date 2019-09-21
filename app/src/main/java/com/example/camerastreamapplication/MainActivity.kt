@@ -9,12 +9,15 @@ import android.os.Bundle
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.TextureView
+import com.example.camerastreamapplication.audio.ALERT_CODES
 import com.example.camerastreamapplication.audio.AudioNotificator
+import com.example.camerastreamapplication.audio.STATE
 import com.example.camerastreamapplication.cameraAbstractionLayer.*
 import com.example.camerastreamapplication.predictions.LabeledPrediction
 import com.example.camerastreamapplication.predictions.PredictionListener
 import com.example.camerastreamapplication.predictions.Predictor
 import com.example.camerastreamapplication.tfLiteWrapper.TfLiteUtils
+import com.example.camerastreamapplication.threading.ThreadExecutor
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.random.Random
 
@@ -34,7 +37,7 @@ fun randomColor(): Int
 class MainActivity :
         Activity(),
         TextureView.SurfaceTextureListener,
-        CameraReadyListener,
+        CameraStateListener,
         PredictionListener
 {
 
@@ -116,7 +119,7 @@ class MainActivity :
 
     private fun prepareCamera()
     {
-        if (cameraHandler == null)
+        if (cameraHandler == null && textureView.isAvailable)
         {
             cameraHandler = CameraSessionBuilder()
                     .withActivity(this)
@@ -131,6 +134,22 @@ class MainActivity :
     override fun onCameraReady()
     {
         cameraHandler?.start()
+    }
+
+    override fun onCameraFailure()
+    {
+        cameraHandler = null
+        if (audioNotificator.state != STATE.PREPARING)
+        {
+            audioNotificator.playAlert(ALERT_CODES.CAMERA_ALERT)
+        }
+
+        val runnable = Runnable {
+            Thread.sleep(5000)
+            prepareCamera()
+        }
+
+        ThreadExecutor.execute(runnable)
     }
 
     private fun applyRotation()

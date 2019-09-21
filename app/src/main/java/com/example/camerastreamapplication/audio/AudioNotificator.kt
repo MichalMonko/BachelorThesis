@@ -24,6 +24,7 @@ class AudioNotificator(private val activity: Activity)
         private set
     private lateinit var soundPool: SoundPool
 
+    private var streamId: Int = 0
     private val soundBoard = mutableMapOf<Any, SoundMetadata>()
 
 
@@ -86,7 +87,7 @@ class AudioNotificator(private val activity: Activity)
             val sliced = when
             {
                 notifications.size >= MAX_OBJECT_NOTIFICATIONS -> notifications.subList(0, MAX_OBJECT_NOTIFICATIONS)
-                else                                                                                      -> notifications.subList(0, notifications.size)
+                else                                           -> notifications.subList(0, notifications.size)
             }
 
             val soundsToPlay = buildSoundAlerts(sliced)
@@ -102,9 +103,22 @@ class AudioNotificator(private val activity: Activity)
     {
         for (sound in soundsToPlay)
         {
-            soundPool.play(sound.soundId, 1.0f, 1.0f, 1, 0, 1.0f)
+            streamId = soundPool.play(sound.soundId, 1.0f, 1.0f, 1, 0, 1.0f)
             Thread.sleep(sound.duration)
         }
+    }
+
+    fun playAlert(alertCode: ALERT_CODES)
+    {
+        val runnable = Runnable {
+            if (streamId != 0)
+            {
+                soundPool.stop(streamId)
+            }
+            streamId = soundPool.play(soundBoard[alertCode]!!.soundId, 1.0f, 1.0f, 100, 0, 1.0f)
+        }
+
+        ThreadExecutor.execute(runnable)
     }
 
     private fun buildSoundAlerts(notifications: List<Notification>): List<SoundMetadata>
