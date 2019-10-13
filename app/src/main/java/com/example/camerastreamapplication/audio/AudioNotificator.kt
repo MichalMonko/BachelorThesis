@@ -1,9 +1,11 @@
 package com.example.camerastreamapplication.audio
 
 import android.app.Activity
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaMetadataRetriever
 import android.media.MediaMetadataRetriever.METADATA_KEY_DURATION
+import android.media.MediaPlayer
 import android.media.SoundPool
 import com.example.camerastreamapplication.config.MAX_OBJECT_NOTIFICATIONS
 import com.example.camerastreamapplication.notificationBuilder.Notification
@@ -27,6 +29,20 @@ class AudioNotificator(private val activity: Activity)
     private var streamId: Int = 0
     private val soundBoard = mutableMapOf<Any, SoundMetadata>()
 
+    companion object
+    {
+
+        fun playRawAudio(context: Context, raw_id: Int)
+        {
+            val runnable = Runnable {
+                val mediaPlayer: MediaPlayer? = MediaPlayer.create(context, raw_id)
+                mediaPlayer?.setVolume(1.0f,1.0f)
+                mediaPlayer?.start()
+            }
+            ThreadExecutor.execute(runnable)
+        }
+
+    }
 
     fun prepare()
     {
