@@ -15,9 +15,7 @@ const val OFFSET_PER_BOX = NUM_OF_CLASSES + 5
 
 val ANCHORS = arrayOf(0.57273f, 0.677385f, 1.87446f, 2.06253f, 3.33843f, 5.47434f, 7.88282f, 3.52778f, 9.77052f, 9.16828f)
 
-var BOX_DETECTION_THRESHOLD = 0.55f
-var CLASS_CONFIDENCE_THRESHOLD = 0.6f
-
+var DETECTION_THRESHOLD = 0.55f
 
 var IoU_THRESHOLD = 0.4f
 
@@ -27,7 +25,12 @@ var MAX_OBJECT_NOTIFICATIONS = 3
 
 //Shared Preferences
 const val SHARED_PREFERENCES_NAME = "Configuration"
-const val BOX_DETECTION_KEY = "BoxDetection"
-const val CLASS_DETECTION_KEY = "ClassDetection"
+const val DETECTION_KEY = "Detection"
 const val IOU_THRESHOLD_KEY = "IouThreshold"
 const val MAX_NOTIFICATIONS_KEY = "MaxNotifications"
+const val FLASHLIGHT_ENABLED_KEY = "Flashlight"
+const val VISUAL_MODE_ENABLED_KEY = "VisualMode"
+
+var FLASHLIGHT_ENABLED = true
+var VISUAL_MODE_ENABLED = true
+

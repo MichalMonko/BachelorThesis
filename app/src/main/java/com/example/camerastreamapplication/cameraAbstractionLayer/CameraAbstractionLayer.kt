@@ -15,6 +15,7 @@ import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.util.Size
 import android.view.Surface
+import com.example.camerastreamapplication.config.FLASHLIGHT_ENABLED
 
 private const val TAG = "CAMERA"
 
@@ -173,6 +174,11 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
 
 
         requestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+
+        if(FLASHLIGHT_ENABLED)
+        {
+            requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_TORCH)
+        }
 
         val surfaces = configureSurfaces(targets, shouldSwapDimensions)
 

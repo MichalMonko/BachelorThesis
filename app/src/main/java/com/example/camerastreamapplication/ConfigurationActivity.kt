@@ -4,10 +4,10 @@ import android.content.Context
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import android.widget.CheckBox
 import android.widget.SeekBar
 import com.example.camerastreamapplication.config.*
 import com.example.camerastreamapplication.fragments.HelpFragment
-import kotlinx.android.synthetic.main.configuration_activity.*
 import kotlinx.android.synthetic.main.content_configuration.*
 
 private const val HELP_DIALOG_TAG = "HelpDialog"
@@ -20,17 +20,15 @@ class ConfigurationActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListen
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.configuration_activity)
-        setSupportActionBar(toolbar)
 
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        box_threshold_slider.setOnSeekBarChangeListener(this)
-        class_threshold_slider.setOnSeekBarChangeListener(this)
+        detection_threshold_slider.setOnSeekBarChangeListener(this)
         iou_threshold_slider.setOnSeekBarChangeListener(this)
         notifications_slider.setOnSeekBarChangeListener(this)
 
-        box_threshold_help.setOnClickListener(this)
-        class_threshold_help.setOnClickListener(this)
+        flashlight_checkbox.setOnClickListener(this)
+        visual_mode_checkbox.setOnClickListener(this)
+
+        detection_threshold_help.setOnClickListener(this)
         iou_threshold_help.setOnClickListener(this)
         notifications_help.setOnClickListener(this)
     }
@@ -39,8 +37,7 @@ class ConfigurationActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListen
     {
         super.onResume()
 
-        box_threshold_slider.progress = (BOX_DETECTION_THRESHOLD * 100.0f).toInt()
-        class_threshold_slider.progress = (CLASS_CONFIDENCE_THRESHOLD * 100.0f).toInt()
+        detection_threshold_slider.progress = (DETECTION_THRESHOLD * 100.0f).toInt()
         iou_threshold_slider.progress = (IoU_THRESHOLD * 100.0f).toInt()
         notifications_slider.progress = MAX_OBJECT_NOTIFICATIONS
     }
@@ -51,10 +48,11 @@ class ConfigurationActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListen
         val sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
 
-        editor.putFloat(BOX_DETECTION_KEY, BOX_DETECTION_THRESHOLD)
-        editor.putFloat(CLASS_DETECTION_KEY, CLASS_CONFIDENCE_THRESHOLD)
+        editor.putFloat(DETECTION_KEY, DETECTION_THRESHOLD)
         editor.putFloat(IOU_THRESHOLD_KEY, IoU_THRESHOLD)
         editor.putInt(MAX_NOTIFICATIONS_KEY, MAX_OBJECT_NOTIFICATIONS)
+        editor.putBoolean(FLASHLIGHT_ENABLED_KEY, FLASHLIGHT_ENABLED)
+        editor.putBoolean(VISUAL_MODE_ENABLED_KEY, VISUAL_MODE_ENABLED)
 
         editor.apply()
     }
@@ -63,15 +61,10 @@ class ConfigurationActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListen
     {
         when (seekBar)
         {
-            box_threshold_slider   ->
+            detection_threshold_slider   ->
             {
-                BOX_DETECTION_THRESHOLD = intToFloatPercentage(progress)
-                box_threshold_inidicator.text = progress.toString()
-            }
-            class_threshold_slider ->
-            {
-                CLASS_CONFIDENCE_THRESHOLD = intToFloatPercentage(progress)
-                class_threshold_indicator.text = progress.toString()
+                DETECTION_THRESHOLD = intToFloatPercentage(progress)
+                detection_threshold_inidicator.text = progress.toString()
             }
             iou_threshold_slider   ->
             {
@@ -93,10 +86,19 @@ class ConfigurationActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListen
             return
         }
 
+        if(view is CheckBox)
+        {
+            when (view)
+            {
+                flashlight_checkbox -> FLASHLIGHT_ENABLED = view.isChecked
+                visual_mode_checkbox -> VISUAL_MODE_ENABLED = view.isChecked
+            }
+            return
+        }
+
         val messagesResources = when (view)
         {
-            box_threshold_help   -> Pair(R.string.box_threshold_help_title, R.string.box_threshold_help_message)
-            class_threshold_help -> Pair(R.string.class_threshold_help_title, R.string.class_threshold_help_message)
+            detection_threshold_help   -> Pair(R.string.detection_threshold_help_title, R.string.detection_threshold_help_message)
             iou_threshold_help   -> Pair(R.string.iou_threshold_help_title, R.string.iou_threshold_help_message)
             notifications_help   -> Pair(R.string.notifications_help_title, R.string.notifications_help_message)
             else                 -> throw IllegalStateException("No handler for view: $view")

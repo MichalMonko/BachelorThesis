@@ -28,8 +28,7 @@ class MainMenuActivity : AppCompatActivity(), View.OnClickListener
         helpButton.setOnClickListener(this)
 
         val sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
-        BOX_DETECTION_THRESHOLD = sharedPreferences.getFloat(BOX_DETECTION_KEY, BOX_DETECTION_THRESHOLD)
-        CLASS_CONFIDENCE_THRESHOLD = sharedPreferences.getFloat(CLASS_DETECTION_KEY, CLASS_CONFIDENCE_THRESHOLD)
+        DETECTION_THRESHOLD = sharedPreferences.getFloat(DETECTION_KEY, DETECTION_THRESHOLD)
         IoU_THRESHOLD = sharedPreferences.getFloat(IOU_THRESHOLD_KEY, IoU_THRESHOLD)
         MAX_OBJECT_NOTIFICATIONS = sharedPreferences.getInt(MAX_NOTIFICATIONS_KEY, MAX_OBJECT_NOTIFICATIONS)
 

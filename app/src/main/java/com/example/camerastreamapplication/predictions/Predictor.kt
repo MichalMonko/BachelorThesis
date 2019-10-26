@@ -103,8 +103,6 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
 
                     val boxObjectConfidence = sigmoid(output[boxOffset + 4])
 
-                    if (boxObjectConfidence > BOX_DETECTION_THRESHOLD)
-                    {
                         for (i in 0 until NUM_OF_CLASSES)
                         {
                             classesScores[i] = sigmoid(output[classDataStart + i])
@@ -115,7 +113,7 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
                         val maxClassIndex = maxClass.index
                         val maxClassConfidence = maxClass.value * boxObjectConfidence
 
-                        if (maxClassConfidence > CLASS_CONFIDENCE_THRESHOLD)
+                        if (maxClassConfidence * boxObjectConfidence > DETECTION_THRESHOLD )
                         {
 
                             val centerX = (x + sigmoid(output[boxOffset])) * CELL_WIDTH / INPUT_WIDTH
@@ -131,7 +129,6 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
                                     BoundingBoxPrediction(maxClassIndex, maxClassConfidence, boundingBox)
                             )
                         }
-                    }
                 }
             }
         }

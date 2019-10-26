@@ -6,6 +6,7 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.TextureView
@@ -19,7 +20,12 @@ import com.example.camerastreamapplication.predictions.Predictor
 import com.example.camerastreamapplication.tfLiteWrapper.TfLiteUtils
 import com.example.camerastreamapplication.threading.ThreadExecutor
 import kotlinx.android.synthetic.main.activity_main.*
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.FileOutputStream
+import java.util.*
 import kotlin.random.Random
+
 
 private const val TAG = "MAIN_ACTIVITY"
 private const val MODEL_FILE = "yolov2tiny.tflite"
@@ -57,10 +63,11 @@ class MainActivity :
             {
                 if (cameraHandler != null)
                 {
+
                     bitmap = textureView.bitmap
                     if (TfLiteUtils.isReady() && audioNotificator.isReady())
                     {
-                        TfLiteUtils.process(bitmap)
+                        TfLiteUtils.process(applicationContext, bitmap)
                         Log.d(TAG, "Tensor Flow is ready, starting processing")
                     }
                 }
@@ -80,7 +87,6 @@ class MainActivity :
 
         audioNotificator = AudioNotificator(this)
         audioNotificator.prepare()
-
 
         surfaceHolder = surfaceOverlay.holder
         surfaceOverlay.setZOrderOnTop(true)
@@ -189,7 +195,7 @@ class MainActivity :
         paint.style = Paint.Style.FILL
         paint.strokeWidth = 1.0f
         canvas.drawText(label, rect.left.toFloat(), (rect.top - 20).toFloat(), paint)
-
+        canvas.setBitmap(textureView.bitmap)
 
     }
 
@@ -211,8 +217,44 @@ class MainActivity :
             surfaceHolder.unlockCanvasAndPost(canvas)
         }
 
+        val uuid = UUID.randomUUID().toString()
+        val outStream = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/images/${uuid}.jpg")
+        textureView.bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outStream)
+
+        val outStreamAnnotation = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/images/${uuid}.json")
+        outStreamAnnotation.write(toJson(labeledPredictions)?.toByteArray())
+
         audioNotificator.notify(labeledPredictions)
 
         TfLiteUtils.ready = true
+    }
+
+    fun toJson(labeledPredictions: List<LabeledPrediction>): String?
+    {
+        val jsonArray = JSONArray()
+
+        val jsonObject = JSONObject()
+
+        for (prediction in labeledPredictions)
+        {
+            val pixelRect = prediction.location.toPixelRect(textureView.bitmap.width, textureView.bitmap.height)
+
+            val predictionObject = JSONObject()
+            predictionObject.put("name", prediction.name)
+            predictionObject.put("confidence", prediction.confidence)
+
+            val locationArray = JSONArray()
+            locationArray.put(pixelRect.left)
+            locationArray.put(pixelRect.top)
+            locationArray.put(pixelRect.right)
+            locationArray.put(pixelRect.bottom)
+
+            predictionObject.put("location", locationArray)
+
+            jsonArray.put(predictionObject)
+        }
+        jsonObject.put("predictions", jsonArray)
+
+        return jsonObject.toString(4)
     }
 }

@@ -1,14 +1,18 @@
 package com.example.camerastreamapplication.tfLiteWrapper
 
 import android.app.Activity
+import android.content.Context
 import android.graphics.Bitmap
+import android.os.Environment
 import android.util.Log
 import com.example.camerastreamapplication.imageProcessing.ImageProcessingUtils
 import com.example.camerastreamapplication.predictions.Predictor
 import com.example.camerastreamapplication.threading.*
 import org.tensorflow.lite.Interpreter
+import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.system.measureTimeMillis
 
 
 private const val TAG = "TF_UTILS"
@@ -32,8 +36,7 @@ object TfLiteUtils : TensorFlowInitializationListener
 
     private val buffer: ByteBuffer
 
-
-    private var predictor : Predictor? = null
+    private var predictor: Predictor? = null
 
     init
     {
@@ -57,8 +60,9 @@ object TfLiteUtils : TensorFlowInitializationListener
         return byteBuffer
     }
 
-    fun initializeTensorFlow(activity: Activity, filename: String, predictor : Predictor)
+    fun initializeTensorFlow(activity: Activity, filename: String, predictor: Predictor)
     {
+
         val runnable = Runnable {
             try
             {
@@ -75,9 +79,9 @@ object TfLiteUtils : TensorFlowInitializationListener
         ThreadExecutor.execute(runnable)
     }
 
-    fun process(bitmap: Bitmap) : Boolean
+    fun process(context: Context, bitmap: Bitmap): Boolean
     {
-        Log.d(TAG,"processing started")
+        Log.d(TAG, "processing started")
         if (!ready)
         {
             return false
@@ -86,18 +90,22 @@ object TfLiteUtils : TensorFlowInitializationListener
         ready = false
         val processingRunnable = Runnable {
 
-            ImageProcessingUtils.storeInBuffer(bitmap, buffer)
+            val executionTime = measureTimeMillis {
+                ImageProcessingUtils.storeInBuffer(bitmap, buffer)
 
-            Log.d(TAG,"Running interpreter")
-            interpreter?.run(buffer, output)
-            Log.d(TAG,"Interpreter run finished")
+                Log.d(TAG, "Running interpreter")
+                interpreter?.run(buffer, output)
+                Log.d(TAG, "Interpreter run finished")
 
-            predictor?.makePredictions(output)
+                predictor?.makePredictions(output)
+            }
+
+//            saveToFile(context, executionTime)
         }
 
         ThreadExecutor.execute(processingRunnable)
 
-        Log.d(TAG,"processing request send to thread")
+        Log.d(TAG, "processing request send to thread")
         return true
     }
 
@@ -118,5 +126,11 @@ object TfLiteUtils : TensorFlowInitializationListener
     fun isReady(): Boolean
     {
         return initialized && interpreter != null && ready
+    }
+
+    fun saveToFile(context: Context, time: Long)
+    {
+        val outStream = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/prediction_time.txt", true)
+        outStream.write("${time}\n".toByteArray())
     }
 }
