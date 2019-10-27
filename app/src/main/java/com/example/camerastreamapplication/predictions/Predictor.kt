@@ -77,11 +77,15 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
             when (val name = classMapping[prediction.classIndex])
             {
                 null -> null
-                else -> LabeledPrediction(name = name,
-                        confidence = prediction.confidence,
-                        location = prediction.location)
+                else ->
+                {
+                    LabeledPrediction(name = name,
+                            confidence = prediction.confidence,
+                            location = prediction.location)
+                }
             }
         }.filterNotNull()
+                .filter { it.name in URBAN_NAMES }
 
         predictionListener.onPredictionsMade(labeledPredictions)
     }

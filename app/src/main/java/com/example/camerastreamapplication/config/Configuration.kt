@@ -34,3 +34,17 @@ const val VISUAL_MODE_ENABLED_KEY = "VisualMode"
 var FLASHLIGHT_ENABLED = false
 var VISUAL_MODE_ENABLED = true
 
+val URBAN_NAMES = listOf(
+        "person",
+        "bicycle",
+        "car",
+        "motorcycle",
+        "bus",
+        "train",
+        "truck",
+        "boat",
+        "trafficlight",
+        "firehydrant",
+        "parkingmeter",
+        "bench"
+)
