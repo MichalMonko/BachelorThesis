@@ -31,6 +31,8 @@ class MainMenuActivity : AppCompatActivity(), View.OnClickListener
         DETECTION_THRESHOLD = sharedPreferences.getFloat(DETECTION_KEY, DETECTION_THRESHOLD)
         IoU_THRESHOLD = sharedPreferences.getFloat(IOU_THRESHOLD_KEY, IoU_THRESHOLD)
         MAX_OBJECT_NOTIFICATIONS = sharedPreferences.getInt(MAX_NOTIFICATIONS_KEY, MAX_OBJECT_NOTIFICATIONS)
+        FLASHLIGHT_ENABLED = sharedPreferences.getBoolean(FLASHLIGHT_ENABLED_KEY, FLASHLIGHT_ENABLED)
+        VISUAL_MODE_ENABLED = sharedPreferences.getBoolean(VISUAL_MODE_ENABLED_KEY, VISUAL_MODE_ENABLED)
 
     }
 

@@ -31,6 +31,6 @@ const val MAX_NOTIFICATIONS_KEY = "MaxNotifications"
 const val FLASHLIGHT_ENABLED_KEY = "Flashlight"
 const val VISUAL_MODE_ENABLED_KEY = "VisualMode"
 
-var FLASHLIGHT_ENABLED = true
+var FLASHLIGHT_ENABLED = false
 var VISUAL_MODE_ENABLED = true
 
