@@ -3,16 +3,13 @@ package com.example.camerastreamapplication.tfLiteWrapper
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
-import android.os.Environment
 import android.util.Log
 import com.example.camerastreamapplication.imageProcessing.ImageProcessingUtils
 import com.example.camerastreamapplication.predictions.Predictor
 import com.example.camerastreamapplication.threading.*
 import org.tensorflow.lite.Interpreter
-import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import kotlin.system.measureTimeMillis
 
 
 private const val TAG = "TF_UTILS"
@@ -90,7 +87,7 @@ object TfLiteUtils : TensorFlowInitializationListener
         ready = false
         val processingRunnable = Runnable {
 
-            val executionTime = measureTimeMillis {
+//            val executionTime = measureTimeMillis {
                 ImageProcessingUtils.storeInBuffer(bitmap, buffer)
 
                 Log.d(TAG, "Running interpreter")
@@ -101,7 +98,7 @@ object TfLiteUtils : TensorFlowInitializationListener
             }
 
 //            saveToFile(context, executionTime)
-        }
+//        }
 
         ThreadExecutor.execute(processingRunnable)
 
@@ -128,9 +125,9 @@ object TfLiteUtils : TensorFlowInitializationListener
         return initialized && interpreter != null && ready
     }
 
-    fun saveToFile(context: Context, time: Long)
-    {
-        val outStream = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/prediction_time.txt", true)
-        outStream.write("${time}\n".toByteArray())
-    }
+//    fun saveToFile(context: Context, time: Long)
+//    {
+//        val outStream = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/prediction_time.txt", true)
+//        outStream.write("${time}\n".toByteArray())
+//    }
 }

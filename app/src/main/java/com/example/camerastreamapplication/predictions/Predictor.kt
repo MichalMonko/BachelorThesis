@@ -85,7 +85,7 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
                 }
             }
         }.filterNotNull()
-                .filter { it.name in URBAN_NAMES }
+//                .filter { it.name in URBAN_NAMES }
 
         predictionListener.onPredictionsMade(labeledPredictions)
     }

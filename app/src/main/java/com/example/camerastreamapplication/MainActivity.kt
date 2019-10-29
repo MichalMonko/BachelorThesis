@@ -6,7 +6,6 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.TextureView
@@ -22,8 +21,6 @@ import com.example.camerastreamapplication.threading.ThreadExecutor
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.FileOutputStream
-import java.util.*
 import kotlin.random.Random
 
 
@@ -217,16 +214,21 @@ class MainActivity :
             surfaceHolder.unlockCanvasAndPost(canvas)
         }
 
-        val uuid = UUID.randomUUID().toString()
-        val outStream = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/images/${uuid}.jpg")
-        textureView.bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outStream)
+//        textureView.bitmap?.let {
+//
+//            val uuid = UUID.randomUUID().toString()
+//            val outStream = FileOutputStream(
+//                    "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${uuid}.jpg")
+//            it.compress(Bitmap.CompressFormat.JPEG, 50, outStream)
+//
+//            val outStreamAnnotation = FileOutputStream(
+//                    "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${uuid}.json")
+//            outStreamAnnotation.write(toJson(labeledPredictions)?.toByteArray())
 
-        val outStreamAnnotation = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/images/${uuid}.json")
-        outStreamAnnotation.write(toJson(labeledPredictions)?.toByteArray())
+            audioNotificator.notify(labeledPredictions)
 
-        audioNotificator.notify(labeledPredictions)
-
-        TfLiteUtils.ready = true
+            TfLiteUtils.ready = true
+//        }
     }
 
     fun toJson(labeledPredictions: List<LabeledPrediction>): String?

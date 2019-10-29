@@ -70,7 +70,7 @@ object NotificationBuilder
     private fun buildNotification(prediction: LabeledPrediction): Notification?
     {
         val locationIoU = mapOf(
-                Pair(Location.FRONT, iou(AREAS[Location.FRONT], prediction.location.normalizedRect)),
+                Pair(Location.FRONT, iou(AREAS[Location.FRONT], prediction.location.normalizedRect) + 0.02f),
                 Pair(Location.LEFT, iou(AREAS[Location.LEFT], prediction.location.normalizedRect)),
                 Pair(Location.RIGHT, iou(AREAS[Location.RIGHT], prediction.location.normalizedRect))
         )
