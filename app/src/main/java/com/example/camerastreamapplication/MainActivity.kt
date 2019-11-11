@@ -6,6 +6,7 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.TextureView
@@ -13,6 +14,9 @@ import com.example.camerastreamapplication.audio.ALERT_CODES
 import com.example.camerastreamapplication.audio.AudioNotificator
 import com.example.camerastreamapplication.audio.STATE
 import com.example.camerastreamapplication.cameraAbstractionLayer.*
+import com.example.camerastreamapplication.config.DETECTION_THRESHOLD
+import com.example.camerastreamapplication.config.IoU_THRESHOLD
+import com.example.camerastreamapplication.config.VISUAL_MODE_ENABLED
 import com.example.camerastreamapplication.predictions.LabeledPrediction
 import com.example.camerastreamapplication.predictions.PredictionListener
 import com.example.camerastreamapplication.predictions.Predictor
@@ -21,6 +25,8 @@ import com.example.camerastreamapplication.threading.ThreadExecutor
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.FileOutputStream
+import java.util.*
 import kotlin.random.Random
 
 
@@ -88,6 +94,11 @@ class MainActivity :
         surfaceHolder = surfaceOverlay.holder
         surfaceOverlay.setZOrderOnTop(true)
         surfaceHolder.setFormat(PixelFormat.TRANSLUCENT)
+
+        if (!VISUAL_MODE_ENABLED)
+        {
+            textureView.alpha = 0.0f
+        }
     }
 
     override fun onResume()
@@ -192,43 +203,6 @@ class MainActivity :
         paint.style = Paint.Style.FILL
         paint.strokeWidth = 1.0f
         canvas.drawText(label, rect.left.toFloat(), (rect.top - 20).toFloat(), paint)
-        canvas.setBitmap(textureView.bitmap)
-
-    }
-
-    override fun onPredictionsMade(labeledPredictions: List<LabeledPrediction>)
-    {
-        Log.d(TAG, "onPredictionsMade() called")
-
-        val canvas = surfaceHolder.lockCanvas()
-        if (canvas != null)
-        {
-            canvas.drawColor(0, PorterDuff.Mode.CLEAR)
-
-            for (prediction in labeledPredictions)
-            {
-                drawPrediction("${prediction.name} : ${prediction.confidence}",
-                        prediction.location.toPixelRect(bitmap.width, bitmap.height),
-                        canvas)
-            }
-            surfaceHolder.unlockCanvasAndPost(canvas)
-        }
-
-//        textureView.bitmap?.let {
-//
-//            val uuid = UUID.randomUUID().toString()
-//            val outStream = FileOutputStream(
-//                    "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${uuid}.jpg")
-//            it.compress(Bitmap.CompressFormat.JPEG, 50, outStream)
-//
-//            val outStreamAnnotation = FileOutputStream(
-//                    "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${uuid}.json")
-//            outStreamAnnotation.write(toJson(labeledPredictions)?.toByteArray())
-
-            audioNotificator.notify(labeledPredictions)
-
-            TfLiteUtils.ready = true
-//        }
     }
 
     fun toJson(labeledPredictions: List<LabeledPrediction>): String?
@@ -259,4 +233,45 @@ class MainActivity :
 
         return jsonObject.toString(4)
     }
+
+    override fun onPredictionsMade(labeledPredictions: List<LabeledPrediction>)
+    {
+        Log.d(TAG, "onPredictionsMade() called")
+
+        if (VISUAL_MODE_ENABLED)
+        {
+            val canvas = surfaceHolder.lockCanvas()
+            if (canvas != null)
+            {
+                canvas.drawColor(0, PorterDuff.Mode.CLEAR)
+
+                for (prediction in labeledPredictions)
+                {
+                    drawPrediction("${prediction.name} : ${prediction.confidence}",
+                            prediction.location.toPixelRect(bitmap.width, bitmap.height),
+                            canvas)
+                }
+                canvas.setBitmap(textureView.bitmap)
+                surfaceHolder.unlockCanvasAndPost(canvas)
+            }
+        }
+
+        textureView.bitmap?.let {
+
+            val uuid = UUID.randomUUID().toString()
+            val outStream = FileOutputStream(
+                    "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${IoU_THRESHOLD}_${uuid}.jpg")
+            it.compress(Bitmap.CompressFormat.JPEG, 30, outStream)
+
+            val outStreamAnnotation = FileOutputStream(
+                    "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${IoU_THRESHOLD}_${uuid}.json")
+            outStreamAnnotation.write(toJson(labeledPredictions)?.toByteArray())
+//
+//            audioNotificator.notify(labeledPredictions)
+
+            TfLiteUtils.ready = true
+        }
+    }
+
 }
+

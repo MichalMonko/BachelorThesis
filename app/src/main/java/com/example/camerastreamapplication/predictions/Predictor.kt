@@ -85,7 +85,7 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
                 }
             }
         }.filterNotNull()
-//                .filter { it.name in URBAN_NAMES }
+                .filter { it.name in URBAN_NAMES }
 
         predictionListener.onPredictionsMade(labeledPredictions)
     }
@@ -111,18 +111,18 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
 
                         val boxObjectConfidence = sigmoid(output[boxOffset + 4])
 
-                        for (i in 0 until NUM_OF_CLASSES)
+                        if(boxObjectConfidence > DETECTION_THRESHOLD)
                         {
-                            classesScores[i] = sigmoid(output[classDataStart + i])
-                        }
-                        softmax(classesScores)
+                            for (i in 0 until NUM_OF_CLASSES)
+                            {
+                                classesScores[i] = sigmoid(output[classDataStart + i])
+                            }
+                            softmax(classesScores)
 
-                        val maxClass = classesScores.withIndex().maxBy { it.value } ?: IndexedValue(0, Float.MIN_VALUE)
-                        val maxClassIndex = maxClass.index
-                        val maxClassConfidence = maxClass.value * boxObjectConfidence
-
-                        if (maxClassConfidence * boxObjectConfidence > DETECTION_THRESHOLD)
-                        {
+                            val maxClass = classesScores.withIndex().maxBy { it.value }
+                                    ?: IndexedValue(0, Float.MIN_VALUE)
+                            val maxClassIndex = maxClass.index
+                            val maxClassConfidence = maxClass.value * boxObjectConfidence
 
                             val centerX = (x + sigmoid(output[boxOffset])) * CELL_WIDTH / INPUT_WIDTH
                             val centerY = (y + sigmoid(output[boxOffset + 1])) * CELL_HEIGHT / INPUT_HEIGHT
@@ -155,10 +155,13 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
         val groupedByClass = predictions.groupBy { prediction -> prediction.classIndex }
         val newPredictions = ArrayList<BoundingBoxPrediction>()
 
-        for (classPredictions in groupedByClass.values)
+        for (clazz in groupedByClass.keys)
         {
-            val suppressed = nonMaxSuppression(classPredictions)
-            newPredictions.addAll(suppressed)
+            for (classPredictions in groupedByClass.values)
+            {
+                val suppressed = nonMaxSuppression(classPredictions)
+                newPredictions.addAll(suppressed)
+            }
         }
 
         return newPredictions
@@ -166,24 +169,28 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
 
     private fun nonMaxSuppression(predictions: List<BoundingBoxPrediction>): List<BoundingBoxPrediction>
     {
+        val afterSuppression = ArrayList<BoundingBoxPrediction>()
         if (predictions.size < 2)
         {
             return predictions
         }
-        val sortedPredictions = predictions.sortedByDescending { it.confidence }
-        val topScoredPrediction = sortedPredictions[0]
 
-        val suppressed = ArrayList<BoundingBoxPrediction>()
-
-        for (i in 1 until sortedPredictions.size)
+        val mutablePredictions = predictions.toMutableList()
+        while (mutablePredictions.size > 0)
         {
-            if (iou(topScoredPrediction, sortedPredictions[i]) <= IoU_THRESHOLD)
-            {
-                suppressed.add(predictions[i])
-            }
-        }
+            val topScoredPrediction = mutablePredictions.maxBy { it.confidence } ?: break
+            mutablePredictions.remove(topScoredPrediction)
+            afterSuppression.add(topScoredPrediction)
 
-        return suppressed
+            val markedForRemoval = ArrayList<BoundingBoxPrediction>()
+            for (prediction in mutablePredictions)
+            {
+                if (iou(topScoredPrediction, prediction) >= IoU_THRESHOLD)
+                    markedForRemoval.add(prediction)
+            }
+            mutablePredictions.removeAll(markedForRemoval)
+        }
+        return afterSuppression
     }
 
 

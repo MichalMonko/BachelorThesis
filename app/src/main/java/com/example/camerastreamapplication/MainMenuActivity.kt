@@ -34,6 +34,7 @@ class MainMenuActivity : AppCompatActivity(), View.OnClickListener
         FLASHLIGHT_ENABLED = sharedPreferences.getBoolean(FLASHLIGHT_ENABLED_KEY, FLASHLIGHT_ENABLED)
         VISUAL_MODE_ENABLED = sharedPreferences.getBoolean(VISUAL_MODE_ENABLED_KEY, VISUAL_MODE_ENABLED)
 
+        playInstruction()
     }
 
     private fun playInstruction()

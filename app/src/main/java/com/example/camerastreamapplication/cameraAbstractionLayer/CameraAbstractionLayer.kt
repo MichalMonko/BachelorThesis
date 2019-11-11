@@ -8,7 +8,9 @@ import android.graphics.Point
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
 import android.hardware.camera2.CameraCharacteristics.LENS_FACING
+import android.hardware.camera2.CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON
 import android.hardware.camera2.CameraMetadata.LENS_FACING_BACK
+import android.hardware.camera2.CaptureRequest.*
 import android.os.Handler
 import android.os.HandlerThread
 import android.support.v4.content.ContextCompat
@@ -172,12 +174,14 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
 
         val shouldSwapDimensions = CameraUtils.shouldSwapDimensions(sensorOrientation, displayRotation)
 
-
         requestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+        requestBuilder.set(CONTROL_AF_MODE, CONTROL_AF_MODE_CONTINUOUS_VIDEO)
+        requestBuilder.set(CONTROL_VIDEO_STABILIZATION_MODE, CONTROL_VIDEO_STABILIZATION_MODE_ON)
+        requestBuilder.set(CONTROL_AE_MODE, CONTROL_AE_MODE_ON)
 
-        if(FLASHLIGHT_ENABLED)
+        if (FLASHLIGHT_ENABLED)
         {
-            requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_TORCH)
+            requestBuilder.set(FLASH_MODE, CameraMetadata.FLASH_MODE_TORCH)
         }
 
         val surfaces = configureSurfaces(targets, shouldSwapDimensions)

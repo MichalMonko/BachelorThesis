@@ -40,6 +40,8 @@ class ConfigurationActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListen
         detection_threshold_slider.progress = (DETECTION_THRESHOLD * 100.0f).toInt()
         iou_threshold_slider.progress = (IoU_THRESHOLD * 100.0f).toInt()
         notifications_slider.progress = MAX_OBJECT_NOTIFICATIONS
+        flashlight_checkbox.isChecked = FLASHLIGHT_ENABLED
+        visual_mode_checkbox.isChecked = VISUAL_MODE_ENABLED
     }
 
     override fun onPause()
