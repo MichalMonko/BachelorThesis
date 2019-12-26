@@ -57,6 +57,7 @@ class MainActivity :
     private lateinit var surfaceHolder: SurfaceHolder
     private lateinit var predictor: Predictor
     private lateinit var bitmap: Bitmap
+    var uuid = ""
 
     init
     {
@@ -70,6 +71,14 @@ class MainActivity :
                     bitmap = textureView.bitmap
                     if (TfLiteUtils.isReady() && audioNotificator.isReady())
                     {
+                        textureView.bitmap?.let {
+
+                            uuid = UUID.randomUUID().toString()
+                            val outStream = FileOutputStream(
+                                    "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${IoU_THRESHOLD}_${uuid}.jpg")
+                            it.compress(Bitmap.CompressFormat.JPEG, 30, outStream)
+                        }
+
                         TfLiteUtils.process(applicationContext, bitmap)
                         Log.d(TAG, "Tensor Flow is ready, starting processing")
                     }
@@ -256,21 +265,11 @@ class MainActivity :
             }
         }
 
-        textureView.bitmap?.let {
+        val outStreamAnnotation = FileOutputStream(
+                "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${IoU_THRESHOLD}_${uuid}.json")
+        outStreamAnnotation.write(toJson(labeledPredictions)?.toByteArray())
 
-            val uuid = UUID.randomUUID().toString()
-            val outStream = FileOutputStream(
-                    "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${IoU_THRESHOLD}_${uuid}.jpg")
-            it.compress(Bitmap.CompressFormat.JPEG, 30, outStream)
-
-            val outStreamAnnotation = FileOutputStream(
-                    "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${IoU_THRESHOLD}_${uuid}.json")
-            outStreamAnnotation.write(toJson(labeledPredictions)?.toByteArray())
-//
-//            audioNotificator.notify(labeledPredictions)
-
-            TfLiteUtils.ready = true
-        }
+        TfLiteUtils.ready = true
     }
 
 }

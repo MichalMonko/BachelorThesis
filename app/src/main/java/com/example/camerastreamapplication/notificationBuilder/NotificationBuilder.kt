@@ -99,9 +99,9 @@ object NotificationBuilder
     {
         return when
         {
-            normalizedArea >= 0.7f                            -> Distance.VERY_CLOSE
-            (0.5f <= normalizedArea && normalizedArea < 0.7f) -> Distance.CLOSE
-            (0.2f <= normalizedArea && normalizedArea < 0.5f) -> Distance.AVERAGE
+            normalizedArea >= 0.6f                            -> Distance.VERY_CLOSE
+            (0.4f <= normalizedArea && normalizedArea < 0.6f) -> Distance.CLOSE
+            (0.15f <= normalizedArea && normalizedArea < 0.4f) -> Distance.AVERAGE
             else                                              -> Distance.FAR
         }
     }

@@ -111,7 +111,7 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
 
                         val boxObjectConfidence = sigmoid(output[boxOffset + 4])
 
-                        if(boxObjectConfidence > DETECTION_THRESHOLD)
+                        if (boxObjectConfidence > DETECTION_THRESHOLD)
                         {
                             for (i in 0 until NUM_OF_CLASSES)
                             {
@@ -142,6 +142,11 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
             }
 
             predictions = getNonMaxSuppressed(predictions)
+            val imageArea = INPUT_HEIGHT * INPUT_WIDTH
+            predictions.filter {
+                val pixelRect = it.location.toPixelRect(INPUT_WIDTH, INPUT_HEIGHT)
+                pixelRect.width() * pixelRect.height() > THRESHOLD_SMALL_REMOVAL * imageArea
+            }
             Log.d(TAG, "Neural network processing finished")
             uiThreadHandler.post { notifyListener(predictions) }
         }

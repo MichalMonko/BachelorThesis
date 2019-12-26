@@ -8,6 +8,7 @@ import android.graphics.Point
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
 import android.hardware.camera2.CameraCharacteristics.LENS_FACING
+import android.hardware.camera2.CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION
 import android.hardware.camera2.CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON
 import android.hardware.camera2.CameraMetadata.LENS_FACING_BACK
 import android.hardware.camera2.CaptureRequest.*
@@ -176,7 +177,18 @@ class CameraAbstractionLayer(private val activity: Activity, private val listene
 
         requestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
         requestBuilder.set(CONTROL_AF_MODE, CONTROL_AF_MODE_CONTINUOUS_VIDEO)
-        requestBuilder.set(CONTROL_VIDEO_STABILIZATION_MODE, CONTROL_VIDEO_STABILIZATION_MODE_ON)
+
+        val lensInfo = characteristics.get(LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION)
+
+        if (lensInfo != null && CameraMetadata.LENS_OPTICAL_STABILIZATION_MODE_ON in lensInfo)
+        {
+                requestBuilder.set(LENS_OPTICAL_STABILIZATION_MODE, CameraMetadata.LENS_OPTICAL_STABILIZATION_MODE_ON)
+        }
+        else
+        {
+            requestBuilder.set(CONTROL_VIDEO_STABILIZATION_MODE, CONTROL_VIDEO_STABILIZATION_MODE_ON)
+        }
+
         requestBuilder.set(CONTROL_AE_MODE, CONTROL_AE_MODE_ON)
 
         if (FLASHLIGHT_ENABLED)
