@@ -6,7 +6,6 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.TotalCaptureResult
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.TextureView
@@ -14,8 +13,6 @@ import com.example.camerastreamapplication.audio.ALERT_CODES
 import com.example.camerastreamapplication.audio.AudioNotificator
 import com.example.camerastreamapplication.audio.STATE
 import com.example.camerastreamapplication.cameraAbstractionLayer.*
-import com.example.camerastreamapplication.config.DETECTION_THRESHOLD
-import com.example.camerastreamapplication.config.IoU_THRESHOLD
 import com.example.camerastreamapplication.config.VISUAL_MODE_ENABLED
 import com.example.camerastreamapplication.predictions.LabeledPrediction
 import com.example.camerastreamapplication.predictions.PredictionListener
@@ -25,8 +22,6 @@ import com.example.camerastreamapplication.threading.ThreadExecutor
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.FileOutputStream
-import java.util.*
 import kotlin.random.Random
 
 
@@ -57,7 +52,7 @@ class MainActivity :
     private lateinit var surfaceHolder: SurfaceHolder
     private lateinit var predictor: Predictor
     private lateinit var bitmap: Bitmap
-    var uuid = ""
+//    var uuid = ""
 
     init
     {
@@ -73,10 +68,11 @@ class MainActivity :
                     {
                         textureView.bitmap?.let {
 
-                            uuid = UUID.randomUUID().toString()
-                            val outStream = FileOutputStream(
-                                    "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${IoU_THRESHOLD}_${uuid}.jpg")
-                            it.compress(Bitmap.CompressFormat.JPEG, 30, outStream)
+// Uncomment to enable saving frame to file on phone storage for purpose of measuring
+//                            uuid = UUID.randomUUID().toString()
+//                            val outStream = FileOutputStream(
+//                                    "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${IoU_THRESHOLD}_${uuid}.jpg")
+//                            it.compress(Bitmap.CompressFormat.JPEG, 30, outStream)
                         }
 
                         TfLiteUtils.process(applicationContext, bitmap)
@@ -216,6 +212,8 @@ class MainActivity :
 
     fun toJson(labeledPredictions: List<LabeledPrediction>): String?
     {
+        // Method that can be used to save predictions in json format for
+        // purpose of measuring performance
         val jsonArray = JSONArray()
 
         val jsonObject = JSONObject()
@@ -265,10 +263,12 @@ class MainActivity :
             }
         }
 
-        val outStreamAnnotation = FileOutputStream(
-                "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${IoU_THRESHOLD}_${uuid}.json")
-        outStreamAnnotation.write(toJson(labeledPredictions)?.toByteArray())
+// Uncomment to enable saving frames to file for measuring purpouse
+//        val outStreamAnnotation = FileOutputStream(
+//                "${Environment.getExternalStorageDirectory().absolutePath}/images/${DETECTION_THRESHOLD}_${IoU_THRESHOLD}_${uuid}.json")
+//        outStreamAnnotation.write(toJson(labeledPredictions)?.toByteArray())
 
+        audioNotificator.notify(labeledPredictions);
         TfLiteUtils.ready = true
     }
 

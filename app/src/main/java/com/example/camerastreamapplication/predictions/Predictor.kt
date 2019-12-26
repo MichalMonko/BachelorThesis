@@ -3,7 +3,6 @@ package com.example.camerastreamapplication.predictions
 import android.content.Context
 import android.graphics.Rect
 import android.graphics.RectF
-import android.os.Environment
 import android.os.Handler
 import android.util.Log
 import com.example.camerastreamapplication.config.*
@@ -11,11 +10,9 @@ import com.example.camerastreamapplication.utils.Tensor4D
 import com.example.camerastreamapplication.utils.iou
 import com.example.camerastreamapplication.utils.sigmoid
 import com.example.camerastreamapplication.utils.softmax
-import java.io.FileOutputStream
 import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.system.measureTimeMillis
 
 private const val TAG = "PREDICTOR"
 
@@ -92,67 +89,67 @@ class Predictor(context: Context, classesFile: String, private val predictionLis
 
     fun makePredictions(data: Tensor4D)
     {
-        val executionTime = measureTimeMillis {
-            Log.d(TAG, "Started output processing")
+// val executionTime = measureTimeMillis {
+        Log.d(TAG, "Started output processing")
 
-            val tensor3d = data[0]
+        val tensor3d = data[0]
 
-            var predictions = ArrayList<BoundingBoxPrediction>()
+        var predictions = ArrayList<BoundingBoxPrediction>()
 
-            for (y in 0 until GRID_HEIGHT)
+        for (y in 0 until GRID_HEIGHT)
+        {
+            for (x in 0 until GRID_WIDTH)
             {
-                for (x in 0 until GRID_WIDTH)
+                val output = tensor3d[y][x]
+                for (box in 0 until BOXES_PER_SEGMENT)
                 {
-                    val output = tensor3d[y][x]
-                    for (box in 0 until BOXES_PER_SEGMENT)
+                    val boxOffset = box * OFFSET_PER_BOX
+                    val classDataStart = boxOffset + 5
+
+                    val boxObjectConfidence = sigmoid(output[boxOffset + 4])
+
+                    if (boxObjectConfidence > DETECTION_THRESHOLD)
                     {
-                        val boxOffset = box * OFFSET_PER_BOX
-                        val classDataStart = boxOffset + 5
-
-                        val boxObjectConfidence = sigmoid(output[boxOffset + 4])
-
-                        if (boxObjectConfidence > DETECTION_THRESHOLD)
+                        for (i in 0 until NUM_OF_CLASSES)
                         {
-                            for (i in 0 until NUM_OF_CLASSES)
-                            {
-                                classesScores[i] = sigmoid(output[classDataStart + i])
-                            }
-                            softmax(classesScores)
-
-                            val maxClass = classesScores.withIndex().maxBy { it.value }
-                                    ?: IndexedValue(0, Float.MIN_VALUE)
-                            val maxClassIndex = maxClass.index
-                            val maxClassConfidence = maxClass.value * boxObjectConfidence
-
-                            val centerX = (x + sigmoid(output[boxOffset])) * CELL_WIDTH / INPUT_WIDTH
-                            val centerY = (y + sigmoid(output[boxOffset + 1])) * CELL_HEIGHT / INPUT_HEIGHT
-                            val width = exp(output[boxOffset + 2]) * ANCHORS[2 * box] * CELL_WIDTH / INPUT_WIDTH
-                            val height = exp(output[boxOffset + 3]) * ANCHORS[2 * box + 1] * CELL_WIDTH / INPUT_WIDTH
-
-                            val boundingBox = Box(
-                                    centerX, centerY, width, height
-                            )
-
-                            predictions.add(
-                                    BoundingBoxPrediction(maxClassIndex, maxClassConfidence, boundingBox)
-                            )
+                            classesScores[i] = sigmoid(output[classDataStart + i])
                         }
+                        softmax(classesScores)
+
+                        val maxClass = classesScores.withIndex().maxBy { it.value }
+                                ?: IndexedValue(0, Float.MIN_VALUE)
+                        val maxClassIndex = maxClass.index
+                        val maxClassConfidence = maxClass.value * boxObjectConfidence
+
+                        val centerX = (x + sigmoid(output[boxOffset])) * CELL_WIDTH / INPUT_WIDTH
+                        val centerY = (y + sigmoid(output[boxOffset + 1])) * CELL_HEIGHT / INPUT_HEIGHT
+                        val width = exp(output[boxOffset + 2]) * ANCHORS[2 * box] * CELL_WIDTH / INPUT_WIDTH
+                        val height = exp(output[boxOffset + 3]) * ANCHORS[2 * box + 1] * CELL_WIDTH / INPUT_WIDTH
+
+                        val boundingBox = Box(
+                                centerX, centerY, width, height
+                        )
+
+                        predictions.add(
+                                BoundingBoxPrediction(maxClassIndex, maxClassConfidence, boundingBox)
+                        )
                     }
                 }
             }
-
-            predictions = getNonMaxSuppressed(predictions)
-            val imageArea = INPUT_HEIGHT * INPUT_WIDTH
-            predictions.filter {
-                val pixelRect = it.location.toPixelRect(INPUT_WIDTH, INPUT_HEIGHT)
-                pixelRect.width() * pixelRect.height() > THRESHOLD_SMALL_REMOVAL * imageArea
-            }
-            Log.d(TAG, "Neural network processing finished")
-            uiThreadHandler.post { notifyListener(predictions) }
         }
 
-        val outStream = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/output_parsing_time.txt", true)
-        outStream.write("${executionTime}\n".toByteArray())
+        predictions = getNonMaxSuppressed(predictions)
+        val imageArea = INPUT_HEIGHT * INPUT_WIDTH
+        predictions.filter {
+            val pixelRect = it.location.toPixelRect(INPUT_WIDTH, INPUT_HEIGHT)
+            pixelRect.width() * pixelRect.height() > THRESHOLD_SMALL_REMOVAL * imageArea
+        }
+        Log.d(TAG, "Neural network processing finished")
+        uiThreadHandler.post { notifyListener(predictions) }
+//       }
+// Can be uncommented to measure execution time
+//        val outStream = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/output_parsing_time.txt", true)
+//        outStream.write("${executionTime}\n".toByteArray())
     }
 
     private fun getNonMaxSuppressed(predictions: ArrayList<BoundingBoxPrediction>): ArrayList<BoundingBoxPrediction>

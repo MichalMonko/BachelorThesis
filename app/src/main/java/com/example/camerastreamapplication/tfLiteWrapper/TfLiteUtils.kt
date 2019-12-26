@@ -87,15 +87,16 @@ object TfLiteUtils : TensorFlowInitializationListener
         ready = false
         val processingRunnable = Runnable {
 
-//            val executionTime = measureTimeMillis {
-                ImageProcessingUtils.storeInBuffer(bitmap, buffer)
+            //            val executionTime = measureTimeMillis {
+            ImageProcessingUtils.storeInBuffer(bitmap, buffer)
 
-                Log.d(TAG, "Running interpreter")
-                interpreter?.run(buffer, output)
-                Log.d(TAG, "Interpreter run finished")
+            Log.d(TAG, "Running interpreter")
+            interpreter?.run(buffer, output)
+            Log.d(TAG, "Interpreter run finished")
 
-                predictor?.makePredictions(output)
-            }
+            predictor?.makePredictions(output)
+//}
+        }
 
 //            saveToFile(context, executionTime)
 //        }
